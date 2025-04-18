@@ -1,0 +1,892 @@
+{
+  "teammates": [
+    {
+      "name": "John Smith",
+      "role": "Senior Developer",
+      "hrManager": "Sarah Wilson",
+      "city": "Charlotte",
+      "country": "United States - NC",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Emily Johnson",
+      "role": "UX Designer",
+      "hrManager": "Sarah Wilson",
+      "city": "Charlotte",
+      "country": "United States - NC",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Michael Brown",
+      "role": "DevOps Engineer",
+      "hrManager": "Sarah Wilson",
+      "city": "Charlotte",
+      "country": "United States - NC",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Jessica Lee",
+      "role": "Product Manager",
+      "hrManager": "Sarah Wilson",
+      "city": "Charlotte",
+      "country": "United States - NC",
+      "timeZone": "EST"
+    },
+    {
+      "name": "David Wilson",
+      "role": "Backend Developer",
+      "hrManager": "Sarah Wilson",
+      "city": "Charlotte",
+      "country": "United States - NC",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Alex Thompson",
+      "role": "UI/UX Designer",
+      "hrManager": "Sarah Wilson",
+      "city": "Durham",
+      "country": "United States - NC",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Emma Davis",
+      "role": "Backend Developer",
+      "hrManager": "Sarah Wilson",
+      "city": "Raleigh",
+      "country": "United States - NC",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Robert Johnson",
+      "role": "Full Stack Developer",
+      "hrManager": "Sarah Wilson",
+      "city": "Charlotte",
+      "country": "United States - NC",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Maria Garcia",
+      "role": "System Architect",
+      "hrManager": "Sarah Wilson",
+      "city": "Raleigh",
+      "country": "United States - NC",
+      "timeZone": "EST"
+    },
+    {
+      "name": "James Wilson",
+      "role": "Cloud Engineer",
+      "hrManager": "Sarah Wilson",
+      "city": "Durham",
+      "country": "United States - NC",
+      "timeZone": "EST"
+    },
+
+    {
+      "name": "Sarah Chen",
+      "role": "Frontend Developer",
+      "hrManager": "Jennifer Adams",
+      "city": "New York",
+      "country": "United States - NY",
+      "timeZone": "EST"
+    },
+    {
+      "name": "James Miller",
+      "role": "Data Scientist",
+      "hrManager": "Jennifer Adams",
+      "city": "New York",
+      "country": "United States - NY",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Emma Davis",
+      "role": "QA Engineer",
+      "hrManager": "Jennifer Adams",
+      "city": "New York",
+      "country": "United States - NY",
+      "timeZone": "EST"
+    },
+    {
+      "name": "William Taylor",
+      "role": "Systems Architect",
+      "hrManager": "Jennifer Adams",
+      "city": "New York",
+      "country": "United States - NY",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Olivia White",
+      "role": "Mobile Developer",
+      "hrManager": "Jennifer Adams",
+      "city": "New York",
+      "country": "United States - NY",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Rachel Green",
+      "role": "Project Manager",
+      "hrManager": "Jennifer Adams",
+      "city": "Buffalo",
+      "country": "United States - NY",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Michael Brown",
+      "role": "Product Manager",
+      "hrManager": "Jennifer Adams",
+      "city": "New York",
+      "country": "United States - NY",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Sophie Turner",
+      "role": "Data Engineer",
+      "hrManager": "Jennifer Adams",
+      "city": "Buffalo",
+      "country": "United States - NY",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Daniel Lee",
+      "role": "AI Engineer",
+      "hrManager": "Jennifer Adams",
+      "city": "New York",
+      "country": "United States - NY",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Isabella Martinez",
+      "role": "Security Engineer",
+      "hrManager": "Jennifer Adams",
+      "city": "New York",
+      "country": "United States - NY",
+      "timeZone": "EST"
+    },
+
+    {
+      "name": "Thomas Anderson",
+      "role": "Software Engineer",
+      "hrManager": "Mark Thompson",
+      "city": "London",
+      "country": "United Kingdom",
+      "timeZone": "GMT"
+    },
+    {
+      "name": "Sophie Turner",
+      "role": "Frontend Developer",
+      "hrManager": "Mark Thompson",
+      "city": "London",
+      "country": "United Kingdom",
+      "timeZone": "GMT"
+    },
+    {
+      "name": "George Williams",
+      "role": "DevOps Engineer",
+      "hrManager": "Mark Thompson",
+      "city": "London",
+      "country": "United Kingdom",
+      "timeZone": "GMT"
+    },
+    {
+      "name": "Emma Clarke",
+      "role": "UX Designer",
+      "hrManager": "Mark Thompson",
+      "city": "Manchester",
+      "country": "United Kingdom",
+      "timeZone": "GMT"
+    },
+    {
+      "name": "Harry Wilson",
+      "role": "Backend Developer",
+      "hrManager": "Mark Thompson",
+      "city": "London",
+      "country": "United Kingdom",
+      "timeZone": "GMT"
+    },
+    {
+      "name": "Oliver Moore",
+      "role": "Full Stack Developer",
+      "hrManager": "Mark Thompson",
+      "city": "Birmingham",
+      "country": "United Kingdom",
+      "timeZone": "GMT"
+    },
+    {
+      "name": "Emma Wilson",
+      "role": "UX Designer",
+      "hrManager": "Mark Thompson",
+      "city": "London",
+      "country": "United Kingdom",
+      "timeZone": "GMT"
+    },
+    {
+      "name": "James Taylor",
+      "role": "DevOps Engineer",
+      "hrManager": "Mark Thompson",
+      "city": "Manchester",
+      "country": "United Kingdom",
+      "timeZone": "GMT"
+    },
+    {
+      "name": "Sophie Clark",
+      "role": "Product Owner",
+      "hrManager": "Mark Thompson",
+      "city": "Edinburgh",
+      "country": "United Kingdom",
+      "timeZone": "GMT"
+    },
+    {
+      "name": "William Turner",
+      "role": "Technical Lead",
+      "hrManager": "Mark Thompson",
+      "city": "Bristol",
+      "country": "United Kingdom",
+      "timeZone": "GMT"
+    },
+
+    {
+      "name": "Carlos Rodriguez",
+      "role": "Senior Developer",
+      "hrManager": "Ana Garcia",
+      "city": "Madrid",
+      "country": "Spain",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Ana Martinez",
+      "role": "Product Manager",
+      "hrManager": "Ana Garcia",
+      "city": "Barcelona",
+      "country": "Spain",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Pablo Sanchez",
+      "role": "Frontend Developer",
+      "hrManager": "Ana Garcia",
+      "city": "Madrid",
+      "country": "Spain",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Isabel Lopez",
+      "role": "UX Designer",
+      "hrManager": "Ana Garcia",
+      "city": "Barcelona",
+      "country": "Spain",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Miguel Fernandez",
+      "role": "Backend Developer",
+      "hrManager": "Ana Garcia",
+      "city": "Madrid",
+      "country": "Spain",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Elena Moreno",
+      "role": "QA Lead",
+      "hrManager": "Ana Garcia",
+      "city": "Seville",
+      "country": "Spain",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Antonio Fernandez",
+      "role": "Solutions Architect",
+      "hrManager": "Ana Garcia",
+      "city": "Valencia",
+      "country": "Spain",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Carmen Rodriguez",
+      "role": "Frontend Developer",
+      "hrManager": "Ana Garcia",
+      "city": "Barcelona",
+      "country": "Spain",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Luis Garcia",
+      "role": "Backend Developer",
+      "hrManager": "Ana Garcia",
+      "city": "Madrid",
+      "country": "Spain",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Sofia Ruiz",
+      "role": "Data Scientist",
+      "hrManager": "Ana Garcia",
+      "city": "Barcelona",
+      "country": "Spain",
+      "timeZone": "CET"
+    },
+
+    {
+      "name": "Sophie Dubois",
+      "role": "Software Engineer",
+      "hrManager": "Marie Laurent",
+      "city": "Paris",
+      "country": "France",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Lucas Martin",
+      "role": "Data Scientist",
+      "hrManager": "Marie Laurent",
+      "city": "Lyon",
+      "country": "France",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Emma Bernard",
+      "role": "Frontend Developer",
+      "hrManager": "Marie Laurent",
+      "city": "Paris",
+      "country": "France",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Thomas Petit",
+      "role": "DevOps Engineer",
+      "hrManager": "Marie Laurent",
+      "city": "Paris",
+      "country": "France",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Julie Moreau",
+      "role": "UX Designer",
+      "hrManager": "Marie Laurent",
+      "city": "Lyon",
+      "country": "France",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Marie Dubois",
+      "role": "Product Manager",
+      "hrManager": "Marie Laurent",
+      "city": "Paris",
+      "country": "France",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Pierre Martin",
+      "role": "Data Scientist",
+      "hrManager": "Marie Laurent",
+      "city": "Lyon",
+      "country": "France",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Sophie Laurent",
+      "role": "QA Engineer",
+      "hrManager": "Marie Laurent",
+      "city": "Marseille",
+      "country": "France",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Lucas Bernard",
+      "role": "Mobile Developer",
+      "hrManager": "Marie Laurent",
+      "city": "Bordeaux",
+      "country": "France",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Claire Rousseau",
+      "role": "System Architect",
+      "hrManager": "Marie Laurent",
+      "city": "Paris",
+      "country": "France",
+      "timeZone": "CET"
+    },
+
+    {
+      "name": "Hans Schmidt",
+      "role": "Senior Developer",
+      "hrManager": "Klaus Weber",
+      "city": "Berlin",
+      "country": "Germany",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Anna Mueller",
+      "role": "Product Manager",
+      "hrManager": "Klaus Weber",
+      "city": "Munich",
+      "country": "Germany",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Max Weber",
+      "role": "Backend Developer",
+      "hrManager": "Klaus Weber",
+      "city": "Berlin",
+      "country": "Germany",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Lisa Wagner",
+      "role": "Frontend Developer",
+      "hrManager": "Klaus Weber",
+      "city": "Hamburg",
+      "country": "Germany",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Felix Bauer",
+      "role": "DevOps Engineer",
+      "hrManager": "Klaus Weber",
+      "city": "Munich",
+      "country": "Germany",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Hans Weber",
+      "role": "DevOps Engineer",
+      "hrManager": "Klaus Weber",
+      "city": "Berlin",
+      "country": "Germany",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Anna Schmidt",
+      "role": "Backend Developer",
+      "hrManager": "Klaus Weber",
+      "city": "Munich",
+      "country": "Germany",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Thomas Mueller",
+      "role": "System Architect",
+      "hrManager": "Klaus Weber",
+      "city": "Hamburg",
+      "country": "Germany",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Markus Bauer",
+      "role": "Cloud Architect",
+      "hrManager": "Klaus Weber",
+      "city": "Cologne",
+      "country": "Germany",
+      "timeZone": "CET"
+    },
+    {
+      "name": "Sophie Wagner",
+      "role": "Data Engineer",
+      "hrManager": "Klaus Weber",
+      "city": "Berlin",
+      "country": "Germany",
+      "timeZone": "CET"
+    },
+
+    {
+      "name": "Yuki Tanaka",
+      "role": "Software Engineer",
+      "hrManager": "Hiroshi Sato",
+      "city": "Tokyo",
+      "country": "Japan",
+      "timeZone": "JST"
+    },
+    {
+      "name": "Akiko Yamamoto",
+      "role": "UX Designer",
+      "hrManager": "Hiroshi Sato",
+      "city": "Osaka",
+      "country": "Japan",
+      "timeZone": "JST"
+    },
+    {
+      "name": "Kenji Nakamura",
+      "role": "Backend Developer",
+      "hrManager": "Hiroshi Sato",
+      "city": "Tokyo",
+      "country": "Japan",
+      "timeZone": "JST"
+    },
+    {
+      "name": "Sakura Ito",
+      "role": "Frontend Developer",
+      "hrManager": "Hiroshi Sato",
+      "city": "Tokyo",
+      "country": "Japan",
+      "timeZone": "JST"
+    },
+    {
+      "name": "Riku Suzuki",
+      "role": "Mobile Developer",
+      "hrManager": "Hiroshi Sato",
+      "city": "Osaka",
+      "country": "Japan",
+      "timeZone": "JST"
+    },
+    {
+      "name": "Hiroshi Sato",
+      "role": "Frontend Developer",
+      "hrManager": "Hiroshi Sato",
+      "city": "Osaka",
+      "country": "Japan",
+      "timeZone": "JST"
+    },
+    {
+      "name": "Takeshi Nakamura",
+      "role": "Technical Director",
+      "hrManager": "Hiroshi Sato",
+      "city": "Fukuoka",
+      "country": "Japan",
+      "timeZone": "JST"
+    },
+    {
+      "name": "Mai Yamamoto",
+      "role": "UX Researcher",
+      "hrManager": "Hiroshi Sato",
+      "city": "Kyoto",
+      "country": "Japan",
+      "timeZone": "JST"
+    },
+    {
+      "name": "Kaito Tanaka",
+      "role": "AI Engineer",
+      "hrManager": "Hiroshi Sato",
+      "city": "Tokyo",
+      "country": "Japan",
+      "timeZone": "JST"
+    },
+    {
+      "name": "Yumi Sato",
+      "role": "Data Scientist",
+      "hrManager": "Hiroshi Sato",
+      "city": "Osaka",
+      "country": "Japan",
+      "timeZone": "JST"
+    },
+
+    {
+      "name": "Arjun Patel",
+      "role": "Senior Developer",
+      "hrManager": "Priya Sharma",
+      "city": "Bangalore",
+      "country": "India",
+      "timeZone": "IST"
+    },
+    {
+      "name": "Priya Singh",
+      "role": "Product Manager",
+      "hrManager": "Priya Sharma",
+      "city": "Mumbai",
+      "country": "India",
+      "timeZone": "IST"
+    },
+    {
+      "name": "Rahul Kumar",
+      "role": "Frontend Developer",
+      "hrManager": "Priya Sharma",
+      "city": "Bangalore",
+      "country": "India",
+      "timeZone": "IST"
+    },
+    {
+      "name": "Neha Gupta",
+      "role": "UX Designer",
+      "hrManager": "Priya Sharma",
+      "city": "Delhi",
+      "country": "India",
+      "timeZone": "IST"
+    },
+    {
+      "name": "Vikram Sharma",
+      "role": "Backend Developer",
+      "hrManager": "Priya Sharma",
+      "city": "Mumbai",
+      "country": "India",
+      "timeZone": "IST"
+    },
+    {
+      "name": "Raj Patel",
+      "role": "Data Scientist",
+      "hrManager": "Priya Sharma",
+      "city": "Mumbai",
+      "country": "India",
+      "timeZone": "IST"
+    },
+    {
+      "name": "Amit Kumar",
+      "role": "Backend Developer",
+      "hrManager": "Priya Sharma",
+      "city": "Delhi",
+      "country": "India",
+      "timeZone": "IST"
+    },
+    {
+      "name": "Deepa Sharma",
+      "role": "Product Owner",
+      "hrManager": "Priya Sharma",
+      "city": "Hyderabad",
+      "country": "India",
+      "timeZone": "IST"
+    },
+    {
+      "name": "Arjun Reddy",
+      "role": "Security Engineer",
+      "hrManager": "Priya Sharma",
+      "city": "Chennai",
+      "country": "India",
+      "timeZone": "IST"
+    },
+    {
+      "name": "Ananya Gupta",
+      "role": "ML Engineer",
+      "hrManager": "Priya Sharma",
+      "city": "Pune",
+      "country": "India",
+      "timeZone": "IST"
+    },
+
+    {
+      "name": "Li Wei",
+      "role": "Software Engineer",
+      "hrManager": "Zhang Wei",
+      "city": "Shanghai",
+      "country": "China",
+      "timeZone": "CST"
+    },
+    {
+      "name": "Wang Mei",
+      "role": "Data Scientist",
+      "hrManager": "Zhang Wei",
+      "city": "Beijing",
+      "country": "China",
+      "timeZone": "CST"
+    },
+    {
+      "name": "Zhang Yu",
+      "role": "Frontend Developer",
+      "hrManager": "Zhang Wei",
+      "city": "Shenzhen",
+      "country": "China",
+      "timeZone": "CST"
+    },
+    {
+      "name": "Liu Yan",
+      "role": "UX Designer",
+      "hrManager": "Zhang Wei",
+      "city": "Shanghai",
+      "country": "China",
+      "timeZone": "CST"
+    },
+    {
+      "name": "Chen Wei",
+      "role": "Backend Developer",
+      "hrManager": "Zhang Wei",
+      "city": "Beijing",
+      "country": "China",
+      "timeZone": "CST"
+    },
+    {
+      "name": "Li Ming",
+      "role": "Frontend Developer",
+      "hrManager": "Zhang Wei",
+      "city": "Shanghai",
+      "country": "China",
+      "timeZone": "CST"
+    },
+    {
+      "name": "Zhang Wei",
+      "role": "Mobile Developer",
+      "hrManager": "Zhang Wei",
+      "city": "Shenzhen",
+      "country": "China",
+      "timeZone": "CST"
+    },
+    {
+      "name": "Wang Fang",
+      "role": "Data Engineer",
+      "hrManager": "Zhang Wei",
+      "city": "Guangzhou",
+      "country": "China",
+      "timeZone": "CST"
+    },
+    {
+      "name": "Liu Yang",
+      "role": "DevOps Lead",
+      "hrManager": "Zhang Wei",
+      "city": "Chengdu",
+      "country": "China",
+      "timeZone": "CST"
+    },
+    {
+      "name": "Sun Ling",
+      "role": "AI Researcher",
+      "hrManager": "Zhang Wei",
+      "city": "Beijing",
+      "country": "China",
+      "timeZone": "CST"
+    },
+    {
+      "name": "Robert Johnson",
+      "role": "Full Stack Developer",
+      "hrManager": "Jennifer Adams",
+      "city": "Austin",
+      "country": "United States - TX",
+      "timeZone": "CST"
+    },
+    {
+      "name": "Maria Garcia",
+      "role": "System Architect",
+      "hrManager": "Jennifer Adams",
+      "city": "Dallas",
+      "country": "United States - TX",
+      "timeZone": "CST"
+    },
+    {
+      "name": "James Wilson",
+      "role": "Cloud Engineer",
+      "hrManager": "Jennifer Adams",
+      "city": "Houston",
+      "country": "United States - TX",
+      "timeZone": "CST"
+    },
+    {
+      "name": "Linda Martinez",
+      "role": "DevOps Engineer",
+      "hrManager": "Jennifer Adams",
+      "city": "Austin",
+      "country": "United States - TX",
+      "timeZone": "CST"
+    },
+    {
+      "name": "Michael Thompson",
+      "role": "Security Specialist",
+      "hrManager": "Jennifer Adams",
+      "city": "Dallas",
+      "country": "United States - TX",
+      "timeZone": "CST"
+    },
+    {
+      "name": "Sarah Rodriguez",
+      "role": "UI/UX Designer",
+      "hrManager": "Jennifer Adams",
+      "city": "Houston",
+      "country": "United States - TX",
+      "timeZone": "CST"
+    },
+    {
+      "name": "David Chen",
+      "role": "Backend Developer",
+      "hrManager": "Jennifer Adams",
+      "city": "Austin",
+      "country": "United States - TX",
+      "timeZone": "CST"
+    },
+    {
+      "name": "Emily White",
+      "role": "Product Manager",
+      "hrManager": "Jennifer Adams",
+      "city": "Dallas",
+      "country": "United States - TX",
+      "timeZone": "CST"
+    },
+    {
+      "name": "Thomas Brown",
+      "role": "Data Engineer",
+      "hrManager": "Jennifer Adams",
+      "city": "Houston",
+      "country": "United States - TX",
+      "timeZone": "CST"
+    },
+    {
+      "name": "Lisa Anderson",
+      "role": "QA Lead",
+      "hrManager": "Jennifer Adams",
+      "city": "Austin",
+      "country": "United States - TX",
+      "timeZone": "CST"
+    },
+    {
+      "name": "David Rodriguez",
+      "role": "DevOps Engineer",
+      "hrManager": "Jennifer Adams",
+      "city": "Jersey City",
+      "country": "United States - NJ",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Jessica Kim",
+      "role": "UX Designer",
+      "hrManager": "Jennifer Adams",
+      "city": "Newark",
+      "country": "United States - NJ",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Chris Martinez",
+      "role": "Software Architect",
+      "hrManager": "Jennifer Adams",
+      "city": "Princeton",
+      "country": "United States - NJ",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Amanda Lee",
+      "role": "Frontend Developer",
+      "hrManager": "Jennifer Adams",
+      "city": "Jersey City",
+      "country": "United States - NJ",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Kevin Patel",
+      "role": "Data Scientist",
+      "hrManager": "Jennifer Adams",
+      "city": "Newark",
+      "country": "United States - NJ",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Rachel Cohen",
+      "role": "Product Owner",
+      "hrManager": "Jennifer Adams",
+      "city": "Princeton",
+      "country": "United States - NJ",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Daniel Park",
+      "role": "Mobile Developer",
+      "hrManager": "Jennifer Adams",
+      "city": "Jersey City",
+      "country": "United States - NJ",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Michelle Nguyen",
+      "role": "QA Engineer",
+      "hrManager": "Jennifer Adams",
+      "city": "Newark",
+      "country": "United States - NJ",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Brian Wilson",
+      "role": "Systems Engineer",
+      "hrManager": "Jennifer Adams",
+      "city": "Princeton",
+      "country": "United States - NJ",
+      "timeZone": "EST"
+    },
+    {
+      "name": "Sophia Chang",
+      "role": "Technical Lead",
+      "hrManager": "Jennifer Adams",
+      "city": "Jersey City",
+      "country": "United States - NJ",
+      "timeZone": "EST"
+    }
+  ]
+}

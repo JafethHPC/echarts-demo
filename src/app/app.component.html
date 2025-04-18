@@ -1,0 +1,349 @@
+<div class="app-container">
+  <h1 class="title">World Map with ECharts</h1>
+  <div class="chart-container">
+    <div
+      echarts
+      [options]="chartOptions"
+      (chartClick)="onChartClick($event)"
+      class="demo-chart"
+    ></div>
+  </div>
+
+  <div *ngIf="isTableVisible" class="table-container">
+    <div class="table-header">
+      <h2>{{ selectedLocation }} Team</h2>
+      <button
+        class="close-button"
+        (click)="closeTable()"
+        aria-label="Close table"
+      >
+        ×
+      </button>
+    </div>
+    <div class="table-controls">
+      <div class="search-container">
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          placeholder="Search teammates..."
+          class="search-input"
+          aria-label="Search teammates"
+        />
+      </div>
+      <div class="page-size-container">
+        <label for="pageSize">Items per page:</label>
+        <select
+          id="pageSize"
+          [(ngModel)]="pageSize"
+          (change)="currentPage = 1"
+          class="page-size-select"
+        >
+          <option [value]="5">5</option>
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+          <option [value]="50">50</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th (click)="sortBy('name')" class="sortable">
+              Name {{ getSortIndicator("name") }}
+            </th>
+            <th (click)="sortBy('role')" class="sortable">
+              Role {{ getSortIndicator("role") }}
+            </th>
+            <th (click)="sortBy('hrManager')" class="sortable">
+              HR Manager {{ getSortIndicator("hrManager") }}
+            </th>
+            <th (click)="sortBy('city')" class="sortable">
+              City {{ getSortIndicator("city") }}
+            </th>
+            <th (click)="sortBy('timeZone')" class="sortable">
+              Time Zone {{ getSortIndicator("timeZone") }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let teammate of paginatedTeammates">
+            <td>{{ teammate.name }}</td>
+            <td>{{ teammate.role }}</td>
+            <td>{{ teammate.hrManager }}</td>
+            <td>{{ teammate.city }}</td>
+            <td>{{ teammate.timeZone }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination-info" *ngIf="totalItems > 0">
+      Showing {{ (currentPage - 1) * pageSize + 1 }} to
+      {{ Math.min(currentPage * pageSize, totalItems) }} of
+      {{ totalItems }} entries
+    </div>
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button
+        class="page-button"
+        [disabled]="currentPage === 1"
+        (click)="changePage(1)"
+        aria-label="First page"
+      >
+        ««
+      </button>
+      <button
+        class="page-button"
+        [disabled]="currentPage === 1"
+        (click)="changePage(currentPage - 1)"
+        aria-label="Previous page"
+      >
+        «
+      </button>
+      <button
+        *ngFor="let page of pageNumbers"
+        class="page-button"
+        [class.active]="page === currentPage"
+        (click)="changePage(page)"
+        [style.display]="
+          page >= currentPage - 2 && page <= currentPage + 2 ? 'block' : 'none'
+        "
+      >
+        {{ page }}
+      </button>
+      <button
+        class="page-button"
+        [disabled]="currentPage === totalPages"
+        (click)="changePage(currentPage + 1)"
+        aria-label="Next page"
+      >
+        »
+      </button>
+      <button
+        class="page-button"
+        [disabled]="currentPage === totalPages"
+        (click)="changePage(totalPages)"
+        aria-label="Last page"
+      >
+        »»
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .chart-container {
+    height: 600px;
+    padding: 20px;
+  }
+
+  .demo-chart {
+    height: 100%;
+  }
+
+  h1 {
+    color: #000000;
+  }
+
+  .table-container {
+    margin: 20px;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+  }
+
+  .table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .table-header h2 {
+    margin: 0;
+    color: #1a4b8c;
+  }
+
+  .close-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #666;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .close-button:hover {
+    background-color: #f0f0f0;
+    color: #333;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+  }
+
+  th,
+  td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+    white-space: nowrap;
+  }
+
+  th {
+    background-color: #f8f9fa;
+    color: #1a4b8c;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+  }
+
+  tr:hover {
+    background-color: #f8f9fa;
+  }
+
+  .title {
+    color: black;
+  }
+
+  .table-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 20px;
+  }
+
+  .search-container {
+    flex: 1;
+    max-width: 300px;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: #1a4b8c;
+  }
+
+  .sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease;
+  }
+
+  .sortable:hover {
+    background-color: #e9ecef;
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+  }
+
+  tbody tr:hover {
+    background-color: #e9ecef;
+  }
+
+  .page-size-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .page-size-select {
+    padding: 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+  }
+
+  .pagination-info {
+    text-align: center;
+    color: #666;
+    margin-bottom: 10px;
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 20px;
+  }
+
+  .page-button {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    border: 1px solid #e0e0e0;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  .page-button:hover:not(:disabled) {
+    background-color: #f8f9fa;
+    border-color: #1a4b8c;
+    color: #1a4b8c;
+  }
+
+  .page-button.active {
+    background-color: #1a4b8c;
+    color: white;
+    border-color: #1a4b8c;
+  }
+
+  .page-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Custom scrollbar styles */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #cccccc;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #bbbbbb;
+  }
+
+  /* For Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #cccccc transparent;
+  }
+</style>
