@@ -1,0 +1,52 @@
+<!-- Main chart container -->
+<div id="chart" style="width: 100%; height: 600px"></div>
+
+<!-- Table container that appears only when a node is selected -->
+<div *ngIf="selectedNode" class="table-container">
+  <!-- Table header with title and close button -->
+  <div class="table-header">
+    <h2>{{ selectedNode }} Details</h2>
+    <button
+      class="close-button"
+      (click)="selectedNode = null"
+      aria-label="Close table"
+    >
+      ×
+    </button>
+  </div>
+
+  <!-- Search controls for the table -->
+  <div class="table-controls">
+    <div class="search-container">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Search details..."
+        class="search-input"
+        aria-label="Search details"
+      />
+    </div>
+  </div>
+
+  <!-- Table wrapper for scrolling -->
+  <div class="table-wrapper">
+    <table>
+      <!-- Table header row -->
+      <thead>
+        <tr>
+          <th *ngFor="let header of tableHeaders" class="sortable">
+            {{ header }}
+          </th>
+        </tr>
+      </thead>
+      <!-- Table body with filtered data -->
+      <tbody>
+        <tr *ngFor="let row of filteredTableData">
+          <td *ngFor="let header of tableHeaders">
+            {{ row[header] }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

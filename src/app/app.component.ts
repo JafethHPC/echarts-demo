@@ -7,6 +7,7 @@ import { EChartsOption } from 'echarts';
 import worldGeoJson from '../assets/worldEN.json';
 import teammatesData from '../assets/teammates.json';
 import locationData from '../assets/coordinates.json';
+import { TreeDiagramComponent } from './tree-diagram/tree-diagram.component';
 
 /**
  * Interface representing a team member with their details
@@ -42,11 +43,14 @@ interface ScatterDataItem {
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   standalone: true,
-  imports: [NgxEchartsModule, CommonModule, FormsModule],
+  imports: [NgxEchartsModule, CommonModule, FormsModule, TreeDiagramComponent],
 })
 export class AppComponent implements OnInit {
   // Main configuration object for the ECharts map
   public chartOptions!: EChartsOption;
+
+  // Tab selection state
+  public activeTab: 'world-map' | 'tree-diagram' = 'tree-diagram';
 
   // Data arrays and objects
   public teammates: Teammate[] = teammatesData.teammates;
@@ -413,5 +417,13 @@ export class AppComponent implements OnInit {
   public getSortIndicator(column: keyof Teammate): string {
     if (this.sortColumn !== column) return '↕';
     return this.sortDirection === 'asc' ? '↑' : '↓';
+  }
+
+  public setActiveTab(tab: 'world-map' | 'tree-diagram'): void {
+    this.activeTab = tab;
+    // Reset table view when switching tabs
+    if (this.isTableVisible) {
+      this.closeTable();
+    }
   }
 }

@@ -1,0 +1,165 @@
+/* Base font for the component */
+:host {
+  font-family: "Connections", Arial, sans-serif;
+}
+
+/* Chart container styling */
+#chart {
+  width: 100%;
+  height: 600px;
+  margin: 0 auto;
+}
+
+/* Table container styling */
+.table-container {
+  margin: 20px;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+/* Table header section styling */
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  h2 {
+    margin: 0;
+    color: #1a4b8c;
+    font-size: 1.8em;
+  }
+}
+
+/* Close button styling */
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #f0f0f0;
+    color: #333;
+  }
+}
+
+/* Table controls section */
+.table-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 20px;
+}
+
+/* Search container */
+.search-container {
+  flex: 1;
+  max-width: 300px;
+}
+
+/* Search input styling */
+.search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #1a4b8c;
+  }
+}
+
+/* Sortable header styling */
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #e9ecef;
+  }
+}
+
+/* Table element styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+/* Table cell styling */
+th,
+td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+  white-space: nowrap;
+}
+
+/* Table header styling */
+th {
+  background-color: #f8f9fa;
+  color: #1a4b8c;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+
+/* Table row hover effect */
+tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Zebra striping for table rows */
+tbody tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+tbody tr:hover {
+  background-color: #e9ecef;
+}
+
+/* Table wrapper for scroll behavior */
+.table-wrapper {
+  overflow-x: auto;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+}
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cccccc;
+  border-radius: 3px;
+
+  &:hover {
+    background: #bbbbbb;
+  }
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cccccc transparent;
+}
