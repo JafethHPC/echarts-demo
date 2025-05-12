@@ -1,0 +1,74 @@
+<div *ngIf="selectedNode" class="table-container no-border">
+  <div class="table-header">
+    <div class="table-title">{{ selectedNode }} Details</div>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="data-table styled-table" style="border: none">
+      <thead>
+        <tr>
+          <th
+            *ngFor="let header of tableHeaders"
+            class="header-cell"
+            (click)="onSort(header)"
+            style="cursor: pointer"
+          >
+            {{ header }}
+            <span *ngIf="sortColumn === header">
+              <span *ngIf="sortDirection === 'asc'">▲</span>
+              <span *ngIf="sortDirection === 'desc'">▼</span>
+            </span>
+          </th>
+        </tr>
+        <tr>
+          <th *ngFor="let header of tableHeaders">
+            <input
+              type="text"
+              [(ngModel)]="columnFilters[header]"
+              (input)="updatePaginatedData()"
+              placeholder=""
+              class="column-filter"
+            />
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of paginatedData">
+          <td *ngFor="let header of tableHeaders">{{ row[header] }}</td>
+        </tr>
+        <tr *ngIf="paginatedData.length === 0">
+          <td [attr.colspan]="tableHeaders.length" class="no-data">
+            No records available
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination controls -->
+    <div class="pagination-controls" *ngIf="filteredTableData.length > 0">
+      <div class="page-size">
+        <label>Items per page:</label>
+        <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+          <option *ngFor="let size of pageSizes" [value]="size">
+            {{ size }}
+          </option>
+        </select>
+      </div>
+      <div class="pagination">
+        <button
+          [disabled]="currentPage === 0"
+          (click)="currentPage = currentPage - 1; updatePaginatedData()"
+        >
+          Previous
+        </button>
+        <span>Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+        <button
+          [disabled]="currentPage >= totalPages - 1"
+          (click)="currentPage = currentPage + 1; updatePaginatedData()"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

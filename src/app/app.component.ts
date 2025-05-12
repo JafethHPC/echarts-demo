@@ -1,13 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { NgxEchartsModule } from 'ngx-echarts';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import * as echarts from 'echarts';
 import { EChartsOption } from 'echarts';
 import worldGeoJson from '../assets/worldEN.json';
 import teammatesData from '../assets/teammates.json';
 import locationData from '../assets/coordinates.json';
-import { TreeDiagramComponent } from './tree-diagram/tree-diagram.component';
 
 /**
  * Interface representing a team member with their details
@@ -42,8 +38,7 @@ interface ScatterDataItem {
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  standalone: true,
-  imports: [NgxEchartsModule, CommonModule, FormsModule, TreeDiagramComponent],
+  standalone: false,
 })
 export class AppComponent implements OnInit {
   // Main configuration object for the ECharts map

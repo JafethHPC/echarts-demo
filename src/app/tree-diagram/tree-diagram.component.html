@@ -1,52 +1,29 @@
 <!-- Main chart container -->
-<div id="chart" style="width: 100%; height: 600px"></div>
-
-<!-- Table container that appears only when a node is selected -->
-<div *ngIf="selectedNode" class="table-container">
-  <!-- Table header with title and close button -->
-  <div class="table-header">
-    <h2>{{ selectedNode }} Details</h2>
-    <button
-      class="close-button"
-      (click)="selectedNode = null"
-      aria-label="Close table"
-    >
-      ×
-    </button>
-  </div>
-
-  <!-- Search controls for the table -->
-  <div class="table-controls">
-    <div class="search-container">
-      <input
-        type="text"
-        [(ngModel)]="searchTerm"
-        placeholder="Search details..."
-        class="search-input"
-        aria-label="Search details"
-      />
+<div class="chart-container">
+  <div class="legend-container">
+    <div class="legend-item">
+      <span class="legend-circle" style="background: #e0e0e0"></span> Portfolio
+    </div>
+    <div class="legend-item">
+      <span class="legend-circle" style="background: #c62828"></span> PDT
+    </div>
+    <div class="legend-item">
+      <span class="legend-circle" style="background: #1a4b8c"></span> Team
+    </div>
+    <div class="legend-item">
+      <span
+        class="legend-circle"
+        style="background: #fff; border: 1px solid #000"
+      ></span>
+      Contributor
     </div>
   </div>
-
-  <!-- Table wrapper for scrolling -->
-  <div class="table-wrapper">
-    <table>
-      <!-- Table header row -->
-      <thead>
-        <tr>
-          <th *ngFor="let header of tableHeaders" class="sortable">
-            {{ header }}
-          </th>
-        </tr>
-      </thead>
-      <!-- Table body with filtered data -->
-      <tbody>
-        <tr *ngFor="let row of filteredTableData">
-          <td *ngFor="let header of tableHeaders">
-            {{ row[header] }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <div id="chart"></div>
 </div>
+
+<!-- Table component that appears only when a node is selected -->
+<app-tree-table
+  [selectedNode]="selectedNode"
+  [tableHeaders]="tableHeaders"
+  [tableData]="tableData"
+></app-tree-table>
