@@ -1,0 +1,100 @@
+/* Base font for the component */
+:host {
+  font-family: "Connections", Arial, sans-serif;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Chart container styling */
+.chart-container {
+  width: 100%;
+  height: 700px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Chart styling */
+#chart {
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  margin-top: 125px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Debug info styling */
+.debug-info {
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.debug-info p {
+  margin: 5px 0;
+}
+
+/* Remove all table-related styles from here */
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cccccc;
+  border-radius: 3px;
+
+  &:hover {
+    background: #bbbbbb;
+  }
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cccccc transparent;
+}
+
+.legend-container {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.7rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  z-index: 10;
+  gap: 1.1rem;
+  border: 1px solid #ccc;
+  border-radius: 50px;
+  background: #fff;
+  padding: 0.32rem 1.1rem;
+  box-shadow: none;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+  font-size: 1.02rem;
+  gap: 0.45rem;
+}
+.legend-circle {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 0.28rem;
+  vertical-align: middle;
+}

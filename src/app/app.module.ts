@@ -8,7 +8,7 @@ import { NgxEchartsModule } from 'ngx-echarts';
 
 import { AppComponent } from './app.component';
 import { routes } from './app.routes';
-import { TreeDiagramModule } from './tree-diagram/tree-diagram.module';
+import { TeamStructureModule } from './team-structure/team-structure.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -21,7 +21,7 @@ import { TreeDiagramModule } from './tree-diagram/tree-diagram.module';
     NgxEchartsModule.forRoot({
       echarts: () => import('echarts'),
     }),
-    TreeDiagramModule,
+    TeamStructureModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

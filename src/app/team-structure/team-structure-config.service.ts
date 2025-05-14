@@ -6,17 +6,17 @@ import {
   NodeData,
   LinkData,
   ChartFonts,
-} from './tree-diagram.model';
+} from './team-structure.model';
 
 @Injectable({
   providedIn: 'root',
 })
-export class TreeDiagramConfigService {
+export class TeamStructureConfigService {
   // Node type constants
   readonly NODE_TYPES: NodeTypes = {
     MAIN: ['Portfolio', 'PDT', 'TEAMS'],
     JUNCTION: ['vertical-junction', 'horizontal-line'],
-    CONTRIBUTOR: ['Team\nMember', 'AIT', 'Team\nBacklog', 'SPK'],
+    CONTRIBUTOR: ['AIT', 'SPK', 'TPK', 'Jira Board'],
     CONNECTOR: ['v1', 'v2', 'v3', 'v4'],
   };
 
@@ -24,7 +24,7 @@ export class TreeDiagramConfigService {
   readonly COLORS: NodeColors = {
     PORTFOLIO: '#E0E0E0',
     PDT: '#C62828',
-    TEAM: '#1a4b8c',
+    TEAM: '#012169',
     CONNECTIONS: '#B0BEC5',
     CONTRIBUTOR: {
       bg: '#FFFFFF',
@@ -48,7 +48,11 @@ export class TreeDiagramConfigService {
     memberFont: number,
     memberBoldFont: number,
     formatNodeLabel: Function,
-    getNodeLabel: Function
+    getNodeLabel: Function,
+    portfolioName: string,
+    trainName: string,
+    teamName: string,
+    teamStructureData: any
   ): ChartOptions {
     // Calculate node positions
     const nodeSpacing = Math.min(containerWidth / 4, 240 * scale);
@@ -68,7 +72,7 @@ export class TreeDiagramConfigService {
         bottom: 0,
         containLabel: true,
       },
-      tooltip: this.getTooltipConfig(),
+      tooltip: this.getTooltipConfig(teamStructureData),
       series: [
         {
           type: 'graph',
@@ -87,7 +91,10 @@ export class TreeDiagramConfigService {
               teamsX,
               mainNodeSize,
               mainFont,
-              formatNodeLabel
+              formatNodeLabel,
+              portfolioName,
+              trainName,
+              teamName
             ),
 
             // Junction nodes
@@ -135,48 +142,69 @@ export class TreeDiagramConfigService {
   }
 
   // Get tooltip configuration
-  private getTooltipConfig() {
+  private getTooltipConfig(teamStructureData: any) {
     return {
       trigger: 'item',
-      backgroundColor: '#FFFFFF',
-      borderColor: '#000000',
-      borderWidth: 1,
+      backgroundColor: 'rgba(0,0,0,0)',
+      borderWidth: 0,
       padding: 0,
+      extraCssText:
+        'box-shadow: 0 8px 32px 0 rgba(0,0,0,0.22), 0 1.5px 8px 0 rgba(0,0,0,0.18); border-radius: 10px;',
       formatter: (params: { data: any }) => {
         const data = params.data;
         let content = '';
 
         if (data.category === 'portfolio') {
           content = `
-            <div style="background: #000000; color: #FFFFFF; padding: 10px; font-weight: bold; font-size: 14px;">Portfolio</div>
-            <div style="padding: 10px; font-size: 12px; color: #000000; text-align: left;">
-              Portfolio ID: P001<br>
-              Portfolio Name: Enterprise Solutions<br>
-              Type: Strategic<br>
-              Tech Mgr: John Doe
+            <div style="background: #E0E0E0; color: #000; padding: 10px; font-weight: normal; font-size: 16px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
+              ${teamStructureData?.PortfolioName ?? ''}
+            </div>
+            <div style="background: #fff; padding: 10px; font-size: 12px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
+              Portfolio ID<br><span style='color:#888;'>${
+                teamStructureData?.PortfolioId ?? ''
+              }</span><br>
+              Manager<br><span style='color:#888;'>${
+                teamStructureData?.PortfolioManager ?? ''
+              }</span>
             </div>
           `;
         } else if (data.category === 'pdt') {
           content = `
-            <div style="background: #000000; color: #FFFFFF; padding: 10px; font-weight: bold; font-size: 14px;">PDT</div>
-            <div style="padding: 10px; font-size: 12px; color: #000000; text-align: left;">
-              PDT ID: PDT001<br>
-              PDT Name: Core Development<br>
-              Lead: Jane Smith
+            <div style="background: #C62828; color: #fff; padding: 10px; font-weight: normal; font-size: 16px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
+              ${teamStructureData?.TrainName ?? ''}
+            </div>
+            <div style="background: #fff; padding: 10px; font-size: 12px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
+              Train ID<br><span style='color:#888;'>${
+                teamStructureData?.TrainId ?? ''
+              }</span><br>
+              PDT Manager<br><span style='color:#888;'>${
+                teamStructureData?.PDTManager ?? ''
+              }</span>
             </div>
           `;
         } else if (data.category === 'teams') {
           content = `
-            <div style="background: #000000; color: #FFFFFF; padding: 10px; font-weight: bold; font-size: 14px;">Team Details</div>
-            <div style="padding: 10px; font-size: 12px; color: #000000; text-align: left;">
-              Team ID: T001<br>
-              Team Name: Development Squad<br>
-              Manager: Alice Johnson
+            <div style="background: #012169; color: #fff; padding: 10px; font-weight: normal; font-size: 16px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
+              ${teamStructureData?.TeamName ?? ''}
+            </div>
+            <div style="background: #fff; padding: 10px; font-size: 12px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
+              Team ID<br><span style='color:#888;'>${
+                teamStructureData?.TeamId ?? ''
+              }</span><br>
+              Team Type<br><span style='color:#888;'>${
+                teamStructureData?.TeamType ?? ''
+              }</span><br>
+              Methodology<br><span style='color:#888;'>${
+                teamStructureData?.Methodology ?? ''
+              }</span><br>
+              Team Manager<br><span style='color:#888;'>${
+                teamStructureData?.TeamManager ?? ''
+              }</span>
             </div>
           `;
         }
 
-        return `<div style="background: #FFFFFF; border: 1px solid #000000; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">${content}</div>`;
+        return `<div style="background: transparent; border-radius: 10px; width: 220px; overflow: hidden; box-shadow: none;">${content}</div>`;
       },
     };
   }
@@ -203,7 +231,10 @@ export class TreeDiagramConfigService {
     teamsX: number,
     size: number,
     mainFont: number,
-    formatNodeLabel: Function
+    formatNodeLabel: Function,
+    portfolioName: string,
+    trainName: string,
+    teamName: string
   ): NodeData[] {
     return [
       {
@@ -213,7 +244,7 @@ export class TreeDiagramConfigService {
         y: 150,
         symbolSize: size,
         itemStyle: { color: this.COLORS.PORTFOLIO },
-        label: formatNodeLabel('Demo 1', 'Portfolio', mainFont, true),
+        label: formatNodeLabel(portfolioName, 'Portfolio', mainFont, true),
       },
       {
         name: 'PDT',
@@ -222,7 +253,7 @@ export class TreeDiagramConfigService {
         y: 150,
         symbolSize: size,
         itemStyle: { color: this.COLORS.PDT },
-        label: formatNodeLabel('Demo 2', 'PDT', mainFont, false),
+        label: formatNodeLabel(trainName, 'PDT', mainFont, false),
       },
       {
         name: 'TEAMS',
@@ -231,7 +262,7 @@ export class TreeDiagramConfigService {
         y: 150,
         symbolSize: size,
         itemStyle: { color: this.COLORS.TEAM },
-        label: formatNodeLabel('Demo 3', 'Team', mainFont, false),
+        label: formatNodeLabel(teamName, 'Team', mainFont, false),
       },
     ];
   }
@@ -283,8 +314,8 @@ export class TreeDiagramConfigService {
         borderWidth: 1,
       },
       label: getNodeLabel(name) || {
-        fontSize: name === 'Team\nMember' ? memberFont : memberBoldFont,
-        fontWeight: name === 'Team\nBacklog' ? '300' : 'normal',
+        fontSize: memberBoldFont,
+        fontWeight: 'normal',
         lineHeight: 18,
         color: this.COLORS.TEXT.LIGHT,
         fontFamily: 'Connections, Arial, sans-serif',
@@ -357,96 +388,17 @@ export class TreeDiagramConfigService {
     }));
   }
 
-  // Get table headers based on node type
-  getTableHeaders(nodeName: string): string[] {
-    switch (nodeName) {
-      case 'Portfolio':
-        return [
-          'ID',
-          'Portfolio Name',
-          'Type',
-          'Description',
-          'Manager',
-          'Budget',
-          'Status',
-        ];
-      case 'PDT':
-        return [
-          'ID',
-          'PDT Name',
-          'Lead',
-          'Members',
-          'Focus Area',
-          'Projects',
-          'Stakeholders',
-        ];
-      case 'TEAMS':
-        return [
-          'ID',
-          'Team Name',
-          'Manager',
-          'Size',
-          'Focus',
-          'Location',
-          'Performance',
-        ];
-      case 'Team\nMember':
-        return [
-          'ID',
-          'Name',
-          'Role',
-          'Experience',
-          'Skills',
-          'Current Project',
-          'Performance',
-        ];
-      case 'AIT':
-        return [
-          'ID',
-          'Name',
-          'Category',
-          'Description',
-          'Status',
-          'Owner',
-          'Last Updated',
-        ];
-      case 'Team\nBacklog':
-        return [
-          'ID',
-          'Story',
-          'Points',
-          'Priority',
-          'Status',
-          'Sprint',
-          'Assignee',
-        ];
-      case 'SPK':
-        return [
-          'ID',
-          'Name',
-          'Role',
-          'Department',
-          'Key Interest',
-          'Engagement Level',
-          'Last Contact',
-        ];
-      default:
-        return [];
-    }
-  }
-
   // Get responsive scale based on container width
   getResponsiveScale(containerWidth: number): number {
-    if (containerWidth <= 800) return 0.7;
-    if (containerWidth <= 1000) return 0.8;
-    return 1;
+    if (containerWidth > 825) return 1;
+    return 0.75;
   }
 
   // Calculate zoom level based on scale
   getZoomLevel(scale: number): number {
     if (scale === 1) return 0.75;
     if (scale === 0.8) return 0.7;
-    return 0.625; // For scale = 0.7
+    return 0.7; // For scale = 0.7
   }
 
   // Calculate font sizes based on scale

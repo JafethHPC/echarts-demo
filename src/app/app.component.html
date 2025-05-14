@@ -13,8 +13,8 @@
       </button>
       <button
         class="tab-button"
-        [class.active]="activeTab === 'tree-diagram'"
-        (click)="setActiveTab('tree-diagram')"
+        [class.active]="activeTab === 'team-structure'"
+        (click)="setActiveTab('team-structure')"
       >
         Team Structure
       </button>
@@ -155,8 +155,8 @@
     </div>
   </div>
 
-  <!-- Tree Diagram Component -->
-  <div *ngIf="activeTab === 'tree-diagram'">
-    <app-tree-diagram></app-tree-diagram>
+  <!-- Team Structure Component -->
+  <div *ngIf="activeTab === 'team-structure'">
+    <app-team-structure></app-team-structure>
   </div>
 </div>

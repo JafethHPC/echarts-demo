@@ -9,116 +9,49 @@ import {
   NgZone,
 } from '@angular/core';
 import * as echarts from 'echarts';
-import data from './data.json';
-import { TreeDiagramConfigService } from './tree-diagram-config.service';
-import { ChartFonts, NodeData, TableRow } from './tree-diagram.model';
+import { TeamStructureService } from './team-structure.service';
+import { TeamStructureConfigService } from './team-structure-config.service';
+import { ChartFonts, NodeData } from './team-structure.model';
 
 /**
- * Tree Diagram Component
+ * Team Structure Component
  *
  * This component displays an organizational structure diagram using ECharts.
  * It shows relationships between Portfolio, PDT, and Teams with interactive nodes.
- * Clicking on a node displays detailed information in a table.
  */
 @Component({
-  selector: 'app-tree-diagram',
-  templateUrl: './tree-diagram.component.html',
-  styleUrls: ['./tree-diagram.component.scss'],
+  selector: 'app-team-structure',
+  templateUrl: './team-structure.component.html',
+  styleUrls: ['./team-structure.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
-export class TreeDiagramComponent implements AfterViewInit, OnDestroy {
+export class TeamStructureComponent implements AfterViewInit, OnDestroy {
   /** The ECharts instance */
   private chart: echarts.ECharts | null = null;
 
   /** Currently selected node name (null when no node is selected) */
   selectedNode: string | null = null;
 
-  /** Headers for the details table */
-  tableHeaders: string[] = [];
-
-  /** Data rows for the details table */
-  tableData: TableRow[] = [];
-
-  /** Search term for filtering table data */
-  searchTerm = '';
-
-  /** Grid pagination settings */
-  public pageSize = 5;
-  public pageSizes = [5, 10, 20];
-  public currentPage = 0;
-
-  /** Computed total pages based on current data and page size */
-  get totalPages(): number {
-    return Math.ceil(this.filteredTableData.length / this.pageSize);
-  }
-
-  /** Paginated data for the current page */
-  paginatedData: TableRow[] = [];
-
-  /**
-   * Filtered table data based on search term
-   * Returns all data when search is empty, or filtered results when searching
-   */
-  get filteredTableData(): TableRow[] {
-    let filteredData = this.tableData;
-
-    // Apply global search if present
-    if (this.searchTerm?.trim()) {
-      const searchTermLower = this.searchTerm.toLowerCase();
-      filteredData = filteredData.filter((row) =>
-        Object.values(row).some((value) =>
-          String(value).toLowerCase().includes(searchTermLower)
-        )
-      );
-    }
-
-    // Apply column filters
-    Object.entries(this.columnFilters).forEach(([header, filter]) => {
-      if (filter?.trim()) {
-        const filterLower = filter.toLowerCase();
-        filteredData = filteredData.filter((row) =>
-          String(row[header] ?? '')
-            .toLowerCase()
-            .includes(filterLower)
-        );
-      }
-    });
-
-    // Apply sorting
-    if (this.sortColumn) {
-      filteredData = [...filteredData].sort((a, b) => {
-        const aVal = a[this.sortColumn!];
-        const bVal = b[this.sortColumn!];
-
-        if (aVal == null && bVal == null) return 0;
-        if (aVal == null) return 1;
-        if (bVal == null) return -1;
-
-        const direction = this.sortDirection === 'asc' ? 1 : -1;
-        return aVal < bVal ? -direction : aVal > bVal ? direction : 0;
-      });
-    }
-
-    return filteredData;
-  }
-
   /**
    * Constructor
-   * @param elementRef Reference to the host element
    */
   constructor(
     private elementRef: ElementRef,
     public changeDetectorRef: ChangeDetectorRef,
     private ngZone: NgZone,
-    private configService: TreeDiagramConfigService
+    private configService: TeamStructureConfigService,
+    private teamStructureService: TeamStructureService
   ) {}
+
+  private teamStructureData: any;
 
   /**
    * Initialize the chart after the view is initialized
    */
   ngAfterViewInit() {
     setTimeout(() => {
+      this.teamStructureData = this.teamStructureService.getTeamStructureData();
       this.initChart();
     }, 0);
   }
@@ -135,7 +68,6 @@ export class TreeDiagramComponent implements AfterViewInit, OnDestroy {
 
   /**
    * Handle window resize events to resize the chart
-   * @param event Resize event
    */
   @HostListener('window:resize')
   onResize() {
@@ -168,16 +100,25 @@ export class TreeDiagramComponent implements AfterViewInit, OnDestroy {
       fonts
     );
 
+    // Set zoom: much larger for small windows
+    let zoom = this.configService.getZoomLevel(scale);
+    if (containerWidth <= 750) {
+      zoom = 0.8;
+    }
+
     // Update chart options
     this.chart.setOption({
       series: [
         {
           data: nodesOption,
           center: ['50%', '45%'],
-          zoom: this.configService.getZoomLevel(scale),
+          zoom,
         },
       ],
     });
+
+    // Ensure label font sizes update on resize
+    this.updateNodeLabels();
   }
 
   private getNodesFromOption(options: any): NodeData[] | null {
@@ -238,22 +179,16 @@ export class TreeDiagramComponent implements AfterViewInit, OnDestroy {
           node.x = teamsX;
           node.y = 270 * scale;
           break;
-        case 'Team\nMember':
         case 'AIT':
-        case 'Team\nBacklog':
         case 'SPK':
+        case 'TPK':
+        case 'Jira Board':
           const index = this.configService.NODE_TYPES.CONTRIBUTOR.indexOf(
             node.name
           );
           node.x = bottomRowStartX + index * bottomRowSpacing;
-          node.y = 380 * scale;
+          node.y = (270 + (380 - 270) * 0.6) * scale;
           node.symbolSize = fonts.teamNodeSize;
-          if (node.label) {
-            node.label.fontSize =
-              node.name === 'Team\nMember'
-                ? fonts.memberFont
-                : fonts.memberBoldFont;
-          }
           break;
         case 'v1':
         case 'v2':
@@ -289,7 +224,7 @@ export class TreeDiagramComponent implements AfterViewInit, OnDestroy {
     this.updateNodeDataCounts();
 
     // Set up click handler
-    this.setupChartClickHandler(fonts.mainNodeSize, fonts.teamNodeSize);
+    this.setupChartClickHandler();
 
     // Get chart options
     const option = this.configService.getChartOptions(
@@ -303,10 +238,17 @@ export class TreeDiagramComponent implements AfterViewInit, OnDestroy {
       fonts.memberFont,
       fonts.memberBoldFont,
       this.formatNodeLabel.bind(this),
-      this.getNodeLabel.bind(this)
+      this.getNodeLabel.bind(this),
+      this.teamStructureData?.PortfolioName ?? '',
+      this.teamStructureData?.TrainName ?? '',
+      this.teamStructureData?.TeamName ?? '',
+      this.teamStructureData
     );
 
-    // Apply options to chart
+    // Set zoom: much larger for small windows
+    if (containerWidth <= 750) {
+      option.series[0].zoom = 0.8;
+    }
     this.chart.setOption(option as echarts.EChartsOption);
 
     // Apply formatting and update node labels
@@ -319,7 +261,7 @@ export class TreeDiagramComponent implements AfterViewInit, OnDestroy {
     }, 100);
   }
 
-  private setupChartClickHandler(mainNodeSize: number, teamNodeSize: number) {
+  private setupChartClickHandler() {
     if (!this.chart) return;
 
     this.chart.on('click', (params: any) => {
@@ -339,13 +281,22 @@ export class TreeDiagramComponent implements AfterViewInit, OnDestroy {
         return;
       }
 
-      // Handle node selection
       this.ngZone.run(() => {
-        // Update node sizes (highlight selected node)
-        this.updateNodeSizes(params.name, mainNodeSize, teamNodeSize);
+        // Get current scale and font sizes
+        const chartDom = document.getElementById('chart') as HTMLElement;
+        const containerWidth = chartDom.offsetWidth;
+        const scale = this.configService.getResponsiveScale(containerWidth);
+        const fonts = this.configService.getChartFonts(scale);
 
-        // Generate table data and update UI
-        this.generateTableData(params.name);
+        this.updateNodeSizes(
+          params.name,
+          fonts.mainNodeSize,
+          fonts.teamNodeSize
+        );
+
+        // Update selected node
+        this.selectedNode = params.name;
+
         this.updateNodeLabels();
         this.changeDetectorRef.markForCheck();
       });
@@ -367,10 +318,10 @@ export class TreeDiagramComponent implements AfterViewInit, OnDestroy {
       Portfolio: mainNodeSize,
       PDT: mainNodeSize,
       TEAMS: mainNodeSize,
-      'Team\nMember': teamNodeSize,
       AIT: teamNodeSize,
-      'Team\nBacklog': teamNodeSize,
       SPK: teamNodeSize,
+      TPK: teamNodeSize,
+      'Jira Board': teamNodeSize,
     };
 
     // Reset sizes first
@@ -389,50 +340,6 @@ export class TreeDiagramComponent implements AfterViewInit, OnDestroy {
     }
 
     this.chart.setOption({ series: [{ data: nodesOption }] });
-  }
-
-  /**
-   * Update paginated data based on current page and page size
-   */
-  updatePaginatedData(): void {
-    const start = this.currentPage * this.pageSize;
-    const end = start + this.pageSize;
-    this.paginatedData = this.filteredTableData.slice(start, end);
-    this.changeDetectorRef.markForCheck();
-  }
-
-  /**
-   * Handle page size change
-   */
-  onPageSizeChange(): void {
-    this.currentPage = 0;
-    this.updatePaginatedData();
-  }
-
-  /**
-   * Generate the table data based on the clicked node
-   * Each node type has different table columns and dummy data
-   * @param nodeName The name of the clicked node
-   */
-  private generateTableData(nodeName: string): void {
-    this.selectedNode = nodeName;
-    this.currentPage = 0;
-    this.columnFilters = {};
-
-    // Get headers for this node type
-    this.tableHeaders = this.configService.getTableHeaders(nodeName);
-
-    // Initialize column filters
-    this.tableHeaders.forEach((h) => (this.columnFilters[h] = ''));
-
-    // Get data for the selected node
-    this.tableData = this.getNodeDataArray(nodeName);
-
-    // Update paginated data
-    this.updatePaginatedData();
-
-    // Update node data counts
-    this.updateNodeDataCounts();
   }
 
   /**
@@ -528,52 +435,27 @@ export class TreeDiagramComponent implements AfterViewInit, OnDestroy {
 
   // Store node data counts dynamically
   nodeDataCounts: Record<string, number> = {
-    'Team\nMember': 0,
     AIT: 0,
-    'Team\nBacklog': 0,
     SPK: 0,
+    TPK: 0,
+    'Jira Board': 0,
   };
-
-  // Helper to get the data array for a node
-  private getNodeDataArray(nodeName: string): TableRow[] {
-    switch (nodeName) {
-      case 'Team\nMember':
-        return data['Team Member'] as TableRow[];
-      case 'AIT':
-        return data['AIT'] as TableRow[];
-      case 'Team\nBacklog':
-        return data['Team Backlog'] as TableRow[];
-      case 'SPK':
-        return data['SPK'] as TableRow[];
-      case 'Portfolio':
-        return data['Portfolio'] as TableRow[];
-      case 'PDT':
-        return data['PDT'] as TableRow[];
-      case 'TEAMS':
-        return data['Team'] as TableRow[];
-      default:
-        return [];
-    }
-  }
 
   // Call this after any data change to update nodeDataCounts
   private updateNodeDataCounts(): void {
-    this.configService.NODE_TYPES.CONTRIBUTOR.forEach((name) => {
-      if (name === this.selectedNode) {
-        this.nodeDataCounts[name] = this.tableData.length;
-      } else {
-        this.nodeDataCounts[name] = this.getNodeDataArray(name).length;
-      }
-    });
+    // Use teamStructureData for counts
+    if (!this.teamStructureData) return;
+    this.nodeDataCounts['AIT'] = this.teamStructureData.AITCount;
+    this.nodeDataCounts['SPK'] = this.teamStructureData.SPKCount;
+    this.nodeDataCounts['TPK'] = this.teamStructureData.TPKCount;
+    this.nodeDataCounts['Jira Board'] = this.teamStructureData.JiraBoardCount;
   }
 
   /**
-   * Reset the selected node, table, and chart node sizes/labels
+   * Reset the selected node and chart node sizes/labels
    */
-  private resetSelectedNode(): void {
+  public resetSelectedNode(): void {
     this.selectedNode = null;
-    this.tableHeaders = [];
-    this.tableData = [];
 
     if (this.chart) {
       // Reset all node sizes
@@ -581,14 +463,19 @@ export class TreeDiagramComponent implements AfterViewInit, OnDestroy {
       const nodesOption = this.getNodesFromOption(options);
       if (!nodesOption) return;
 
+      // Use current scale and font sizes
+      const chartDom = document.getElementById('chart') as HTMLElement;
+      const containerWidth = chartDom.offsetWidth;
+      const scale = this.configService.getResponsiveScale(containerWidth);
+      const fonts = this.configService.getChartFonts(scale);
       const normalSizes: Record<string, number> = {
-        Portfolio: 210,
-        PDT: 210,
-        TEAMS: 210,
-        'Team\nMember': 100,
-        AIT: 100,
-        'Team\nBacklog': 100,
-        SPK: 100,
+        Portfolio: fonts.mainNodeSize,
+        PDT: fonts.mainNodeSize,
+        TEAMS: fonts.mainNodeSize,
+        AIT: fonts.teamNodeSize,
+        SPK: fonts.teamNodeSize,
+        TPK: fonts.teamNodeSize,
+        'Jira Board': fonts.teamNodeSize,
       };
 
       nodesOption.forEach((node: NodeData) => {
@@ -598,57 +485,124 @@ export class TreeDiagramComponent implements AfterViewInit, OnDestroy {
       });
 
       this.chart.setOption({ series: [{ data: nodesOption }] });
-      this.updatePaginatedData();
       this.updateNodeLabels();
       this.changeDetectorRef.markForCheck();
     }
   }
 
-  // Add this property to the class:
-  columnFilters: { [key: string]: string } = {};
-
-  // Add these properties to the class:
-  sortColumn: string | null = null;
-  sortDirection: 'asc' | 'desc' = 'asc';
-
-  // Add this method:
-  onSort(header: string): void {
-    if (this.sortColumn === header) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = header;
-      this.sortDirection = 'asc';
-    }
-    this.updatePaginatedData();
-  }
-
   private getNodeLabel(nodeName: string): any {
-    const noData = this.nodeDataCounts[nodeName] === 0;
+    // Get current scale to ensure font sizes are consistent
+    const chartDom = document.getElementById('chart') as HTMLElement;
+    if (!chartDom) return null;
 
-    if (this.configService.NODE_TYPES.CONTRIBUTOR.includes(nodeName)) {
-      let baseFont = nodeName === 'Team\nMember' ? 14 : 16;
-      let fontWeight = nodeName === 'Team\nBacklog' ? '300' : 'normal';
+    const containerWidth = chartDom.offsetWidth;
+    const scale = this.configService.getResponsiveScale(containerWidth);
+    const fonts = this.configService.getChartFonts(scale);
 
+    // Main nodes: show name and subtitle from teamStructureData
+    if (nodeName === 'Portfolio') {
       return {
-        formatter: noData ? `${nodeName}\n{plus|+}` : nodeName,
-        fontSize: baseFont,
-        fontWeight,
-        lineHeight: 18,
-        color: '#000000',
-        fontFamily: 'Connections, Arial, sans-serif',
-        rich: noData
-          ? {
-              plus: {
-                fontSize: 20,
-                fontWeight: 'bold',
-                color: '#000000',
-                lineHeight: 24,
-              },
-            }
-          : undefined,
+        formatter: `{name|${
+          this.teamStructureData?.PortfolioName ?? ''
+        }}\n{title|Portfolio}`,
+        rich: {
+          name: {
+            fontSize: fonts.mainFont,
+            fontWeight: 'normal',
+            lineHeight: 26,
+            color: '#000000',
+            fontFamily: 'Connections, Arial, sans-serif',
+            padding: [0, 0, 0, 0],
+          },
+          title: {
+            fontSize: fonts.mainTitleFont,
+            fontWeight: 'normal',
+            lineHeight: 18,
+            color: '#000000',
+            fontFamily: 'Connections, Arial, sans-serif',
+          },
+        },
       };
     }
-
+    if (nodeName === 'PDT') {
+      return {
+        formatter: `{name|${
+          this.teamStructureData?.TrainName ?? ''
+        }}\n{title|PDT}`,
+        rich: {
+          name: {
+            fontSize: fonts.mainFont,
+            fontWeight: 'normal',
+            lineHeight: 26,
+            color: '#000000',
+            fontFamily: 'Connections, Arial, sans-serif',
+            padding: [0, 0, 0, 0],
+          },
+          title: {
+            fontSize: fonts.mainTitleFont,
+            fontWeight: 'normal',
+            lineHeight: 18,
+            color: '#000000',
+            fontFamily: 'Connections, Arial, sans-serif',
+          },
+        },
+      };
+    }
+    if (nodeName === 'TEAMS') {
+      return {
+        formatter: `{name|${
+          this.teamStructureData?.TeamName ?? ''
+        }}\n{title|Team}`,
+        rich: {
+          name: {
+            fontSize: fonts.mainFont,
+            fontWeight: 'normal',
+            lineHeight: 26,
+            color: '#000000',
+            fontFamily: 'Connections, Arial, sans-serif',
+            padding: [0, 0, 0, 0],
+          },
+          title: {
+            fontSize: fonts.mainTitleFont,
+            fontWeight: 'normal',
+            lineHeight: 18,
+            color: '#000000',
+            fontFamily: 'Connections, Arial, sans-serif',
+          },
+        },
+      };
+    }
+    // Bottom nodes: show count or plus
+    const count = this.nodeDataCounts[nodeName];
+    const noData = count === 0;
+    if (this.configService.NODE_TYPES.CONTRIBUTOR.includes(nodeName)) {
+      return {
+        formatter: noData
+          ? `{name|${nodeName}}\n{plus|+}`
+          : `{name|${nodeName}}\n{count|${count}}`,
+        rich: {
+          name: {
+            fontSize: fonts.memberBoldFont,
+            fontWeight: 'normal',
+            lineHeight: 18,
+            color: '#000000',
+            fontFamily: 'Connections, Arial, sans-serif',
+          },
+          plus: {
+            fontSize: fonts.memberBoldFont,
+            fontWeight: 'bold',
+            color: '#000000',
+            lineHeight: 24,
+          },
+          count: {
+            fontSize: fonts.memberBoldFont,
+            fontWeight: 'bold',
+            color: '#000000',
+            lineHeight: 20,
+          },
+        },
+      };
+    }
     return null;
   }
 }

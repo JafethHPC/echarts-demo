@@ -45,7 +45,7 @@ export class AppComponent implements OnInit {
   public chartOptions!: EChartsOption;
 
   // Tab selection state
-  public activeTab: 'world-map' | 'tree-diagram' = 'tree-diagram';
+  public activeTab: 'world-map' | 'team-structure' = 'team-structure';
 
   // Data arrays and objects
   public teammates: Teammate[] = teammatesData.teammates;
@@ -240,7 +240,7 @@ export class AppComponent implements OnInit {
       // Return formatted tooltip HTML with fixed height and scrollbar
       return `<div style="min-width: 200px;">
         <div style="
-          background-color: #1a4b8c;
+          background-color: #012169;
           color: white;
           padding: 8px 12px;
           margin: -8px -8px 8px -8px;
@@ -414,7 +414,7 @@ export class AppComponent implements OnInit {
     return this.sortDirection === 'asc' ? '↑' : '↓';
   }
 
-  public setActiveTab(tab: 'world-map' | 'tree-diagram'): void {
+  public setActiveTab(tab: 'world-map' | 'team-structure'): void {
     this.activeTab = tab;
     // Reset table view when switching tabs
     if (this.isTableVisible) {

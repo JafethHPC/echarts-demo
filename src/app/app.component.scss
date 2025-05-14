@@ -41,13 +41,13 @@
 }
 
 .tab-button:hover {
-  color: #1a4b8c;
+  color: #012169;
   background-color: #f8f9fa;
 }
 
 .tab-button.active {
-  color: #1a4b8c;
-  border-bottom-color: #1a4b8c;
+  color: #012169;
+  border-bottom-color: #012169;
 }
 
 .chart-container {
@@ -81,7 +81,7 @@ h1 {
 
 .table-header h2 {
   margin: 0;
-  color: #1a4b8c;
+  color: #012169;
 }
 
 .close-button {
@@ -116,7 +116,7 @@ td {
 
 th {
   background-color: #f8f9fa;
-  color: #1a4b8c;
+  color: #012169;
   font-weight: 600;
   position: sticky;
   top: 0;
@@ -150,7 +150,7 @@ tr:hover {
 
 .search-input:focus {
   outline: none;
-  border-color: #1a4b8c;
+  border-color: #012169;
 }
 
 .sortable {
@@ -222,14 +222,14 @@ tbody tr:hover {
 
 .page-button:hover:not(:disabled) {
   background-color: #f8f9fa;
-  border-color: #1a4b8c;
-  color: #1a4b8c;
+  border-color: #012169;
+  color: #012169;
 }
 
 .page-button.active {
-  background-color: #1a4b8c;
+  background-color: #012169;
   color: white;
-  border-color: #1a4b8c;
+  border-color: #012169;
 }
 
 .page-button:disabled {

@@ -1,5 +1,5 @@
 /**
- * Tree diagram node types
+ * Team structure node types
  */
 export interface NodeTypes {
   MAIN: string[];
@@ -51,6 +51,7 @@ export interface NodeData {
   label?: any;
   fixed?: boolean;
   symbol?: string;
+  count?: number;
 }
 
 /**
@@ -94,11 +95,4 @@ export interface ChartOptions {
     links: LinkData[];
     categories: Array<{ name: string }>;
   }>;
-}
-
-/**
- * Data table row
- */
-export interface TableRow {
-  [key: string]: any;
 }
