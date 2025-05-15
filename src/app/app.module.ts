@@ -9,6 +9,7 @@ import { NgxEchartsModule } from 'ngx-echarts';
 import { AppComponent } from './app.component';
 import { routes } from './app.routes';
 import { TeamStructureModule } from './team-structure/team-structure.module';
+import { TeamDemographicsModule } from './team-demographics/team-demographics.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -22,6 +23,7 @@ import { TeamStructureModule } from './team-structure/team-structure.module';
       echarts: () => import('echarts'),
     }),
     TeamStructureModule,
+    TeamDemographicsModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

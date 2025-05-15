@@ -117,6 +117,15 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
       ],
     });
 
+    // Re-apply selected node enlargement if any
+    if (this.selectedNode) {
+      this.updateNodeSizes(
+        this.selectedNode,
+        fonts.mainNodeSize,
+        fonts.teamNodeSize
+      );
+    }
+
     // Ensure label font sizes update on resize
     this.updateNodeLabels();
   }

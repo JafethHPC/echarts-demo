@@ -1,0 +1,133 @@
+<div class="chart-container">
+  <div *ngIf="isLoadingData" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Processing location data...</div>
+  </div>
+  <div
+    echarts
+    [options]="chartOptions"
+    (chartClick)="onChartClick($event)"
+    (chartInit)="onChartInit($event)"
+    class="demo-chart"
+  ></div>
+</div>
+
+<div *ngIf="isTableVisible" class="table-container">
+  <div class="table-header">
+    <h2>{{ selectedLocation }} Team</h2>
+    <button
+      class="close-button"
+      (click)="closeTable()"
+      aria-label="Close table"
+    >
+      ×
+    </button>
+  </div>
+  <div class="table-controls">
+    <div class="search-container">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Search teammates..."
+        class="search-input"
+        aria-label="Search teammates"
+      />
+    </div>
+    <div class="page-size-container">
+      <label for="pageSize">Items per page:</label>
+      <select
+        id="pageSize"
+        [(ngModel)]="pageSize"
+        (change)="currentPage = 1"
+        class="page-size-select"
+      >
+        <option [value]="5">5</option>
+        <option [value]="10">10</option>
+        <option [value]="20">20</option>
+        <option [value]="50">50</option>
+      </select>
+    </div>
+  </div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th (click)="sortBy('name')" class="sortable">
+            Name {{ getSortIndicator("name") }}
+          </th>
+          <th (click)="sortBy('role')" class="sortable">
+            Role {{ getSortIndicator("role") }}
+          </th>
+          <th (click)="sortBy('hrManager')" class="sortable">
+            HR Manager {{ getSortIndicator("hrManager") }}
+          </th>
+          <th (click)="sortBy('city')" class="sortable">
+            City {{ getSortIndicator("city") }}
+          </th>
+          <th (click)="sortBy('timeZone')" class="sortable">
+            Time Zone {{ getSortIndicator("timeZone") }}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let teammate of paginatedTeammates">
+          <td>{{ teammate.name }}</td>
+          <td>{{ teammate.role }}</td>
+          <td>{{ teammate.hrManager }}</td>
+          <td>{{ teammate.city }}</td>
+          <td>{{ teammate.timeZone }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination-info" *ngIf="totalItems > 0">
+    Showing {{ (currentPage - 1) * pageSize + 1 }} to
+    {{ Math.min(currentPage * pageSize, totalItems) }} of
+    {{ totalItems }} entries
+  </div>
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button
+      class="page-button"
+      [disabled]="currentPage === 1"
+      (click)="changePage(1)"
+      aria-label="First page"
+    >
+      ««
+    </button>
+    <button
+      class="page-button"
+      [disabled]="currentPage === 1"
+      (click)="changePage(currentPage - 1)"
+      aria-label="Previous page"
+    >
+      «
+    </button>
+    <button
+      *ngFor="let page of pageNumbers"
+      class="page-button"
+      [class.active]="page === currentPage"
+      (click)="changePage(page)"
+      [style.display]="
+        page >= currentPage - 2 && page <= currentPage + 2 ? 'block' : 'none'
+      "
+    >
+      {{ page }}
+    </button>
+    <button
+      class="page-button"
+      [disabled]="currentPage === totalPages"
+      (click)="changePage(currentPage + 1)"
+      aria-label="Next page"
+    >
+      »
+    </button>
+    <button
+      class="page-button"
+      [disabled]="currentPage === totalPages"
+      (click)="changePage(totalPages)"
+      aria-label="Last page"
+    >
+      »»
+    </button>
+  </div>
+</div>
