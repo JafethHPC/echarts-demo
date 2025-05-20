@@ -50,8 +50,8 @@ export class TeamDemographicsComponent implements OnInit {
 
   // Zoom threshold constants
   private COUNTRY_ZOOM = 2.5;
-  private STATE_ZOOM = 3.0;
-  private CITY_ZOOM = 4.0;
+  private STATE_ZOOM = 4.0;
+  private CITY_ZOOM = 5.0;
   private currentZoom = 1.8; // Default starting zoom
 
   // Grouped data for different zoom levels
@@ -84,6 +84,51 @@ export class TeamDemographicsComponent implements OnInit {
 
   // Track if geocoding is in progress
   public isLoadingData = false;
+
+  // Stat box calculations
+  get teamSize(): number {
+    return this.teammates.length;
+  }
+
+  get uniqueLocations(): number {
+    // Count unique combinations of country and state
+    const uniqueLocations = new Set<string>();
+    this.teammates.forEach((teammate) => {
+      const locationKey = `${teammate.country}|${teammate.state || ''}`;
+      uniqueLocations.add(locationKey);
+    });
+    return uniqueLocations.size;
+  }
+
+  get numSoftwareEngineers(): number {
+    return this.teammates.filter((teammate) =>
+      /software engineer|data engineer/i.test(teammate.role)
+    ).length;
+  }
+
+  get numQualitySpecialists(): number {
+    return this.teammates.filter((teammate) =>
+      /quality (specialist|analyst|assurance)|qa |tester/i.test(teammate.role)
+    ).length;
+  }
+
+  get numScrumMasters(): number {
+    return this.teammates.filter((teammate) =>
+      /scrum master|agile coach/i.test(teammate.role)
+    ).length;
+  }
+
+  get numProductOwners(): number {
+    return this.teammates.filter((teammate) =>
+      /product owner|po /i.test(teammate.role)
+    ).length;
+  }
+
+  get numAppControlSpecialists(): number {
+    return this.teammates.filter((teammate) =>
+      /application control specialist|app control/i.test(teammate.role)
+    ).length;
+  }
 
   constructor(
     private teamDemographicsService: TeamDemographicsService,
@@ -220,6 +265,20 @@ export class TeamDemographicsComponent implements OnInit {
       ...this.countryNodes.filter((node) => node.country !== 'United States'),
     ];
 
+    // Log sample data for debugging
+    console.log(
+      'Sample country node:',
+      this.countryNodes.length > 0 ? this.countryNodes[0] : 'No country nodes'
+    );
+    console.log(
+      'Sample state node:',
+      this.stateNodes.length > 0 ? this.stateNodes[0] : 'No state nodes'
+    );
+    console.log(
+      'Sample city node:',
+      this.cityNodes.length > 0 ? this.cityNodes[0] : 'No city nodes'
+    );
+
     this.chartOptions = {
       ...this.defaultMapOptions,
       tooltip: {
@@ -329,12 +388,29 @@ export class TeamDemographicsComponent implements OnInit {
         (t) => t.country === 'United States' && t.state === data.state
       );
     } else {
-      // City level node - filter by locationId (original behavior)
+      // City level node
       const locationId = data.id;
       locationName = data.city ? `${data.city}, ${data.country}` : data.name;
+
+      // First try to filter by locationId for backward compatibility
       teammatesForLocation = this.teammates.filter(
         (t) => t.locationId === locationId
       );
+
+      // If no teammates found by locationId, try using coordinates
+      if (teammatesForLocation.length === 0 && data.coordinates) {
+        // Find teammates with coordinates close to the clicked point
+        // Using a small threshold for matching
+        const threshold = 0.01; // approximately 1km
+        const [lon, lat] = data.coordinates;
+
+        teammatesForLocation = this.teammates.filter(
+          (t) =>
+            t.coordinates &&
+            Math.abs(t.coordinates[0] - lon) < threshold &&
+            Math.abs(t.coordinates[1] - lat) < threshold
+        );
+      }
     }
 
     this.selectedLocation = locationName;
@@ -370,44 +446,129 @@ export class TeamDemographicsComponent implements OnInit {
     this.chart.on('georoam', (params: any) => {
       const option = this.chart.getOption();
       if (option.geo && option.geo[0]) {
+        const previousZoom = this.currentZoom;
         this.currentZoom = option.geo[0].zoom;
+
+        // Log zoom changes
+        if (Math.abs(previousZoom - this.currentZoom) > 0.1) {
+          console.log(
+            `Zoom changed from ${previousZoom.toFixed(
+              2
+            )} to ${this.currentZoom.toFixed(2)}`
+          );
+
+          // Log zoom level comparison
+          console.log(
+            `COUNTRY_ZOOM: ${this.COUNTRY_ZOOM}, STATE_ZOOM: ${this.STATE_ZOOM}, CITY_ZOOM: ${this.CITY_ZOOM}`
+          );
+          console.log(
+            `Current zoom > STATE_ZOOM: ${this.currentZoom > this.STATE_ZOOM}`
+          );
+        }
+
         this.updateNodesBasedOnZoom();
       }
     });
+
+    // Initial debug log
+    console.log(`Initial cityNodes count: ${this.cityNodes.length}`);
+    console.log(`Initial stateNodes count: ${this.stateNodes.length}`);
+    console.log(`Initial countryNodes count: ${this.countryNodes.length}`);
   }
 
   /**
    * Updates the displayed nodes based on current zoom level
    */
   private updateNodesBasedOnZoom() {
+    console.log(`Current zoom level: ${this.currentZoom.toFixed(2)}`);
     let nodes: any[] = [];
 
-    if (this.currentZoom < this.COUNTRY_ZOOM) {
-      // Show country level nodes, but for US show state-level nodes
-      nodes = [
-        ...this.stateNodes, // Show US states by default
-        ...this.countryNodes.filter((node) => node.country !== 'United States'), // Show all other countries
-      ];
-    } else if (this.currentZoom < this.STATE_ZOOM) {
-      // Show state level nodes (for US) and country level for others
-      nodes = [
-        ...this.stateNodes,
-        ...this.countryNodes.filter((node) => node.country !== 'United States'),
-      ];
-    } else {
-      // Show city level nodes
-      nodes = this.cityNodes;
+    // When zoomed in sufficiently, show city nodes
+    if (this.currentZoom >= this.CITY_ZOOM) {
+      console.log(
+        `Zoom level ${this.currentZoom.toFixed(2)} >= CITY_ZOOM threshold ${
+          this.CITY_ZOOM
+        } - showing city nodes`
+      );
+      // Show city level nodes when zoomed in
+      if (this.cityNodes.length > 0) {
+        // Ensure city nodes have all required visual properties
+        nodes = this.cityNodes.map((node) => ({
+          ...node,
+          symbolSize: 10, // Ensure size is visible
+          itemStyle: {
+            color: '#000000',
+            opacity: 1,
+          },
+          emphasis: {
+            scale: true,
+            itemStyle: {
+              color: '#000000',
+            },
+          },
+          zlevel: 2,
+        }));
+        console.log(`Using ${nodes.length} city nodes`);
+      } else {
+        console.warn(
+          'No city nodes available, falling back to country/state nodes'
+        );
+        nodes = this.getCountryAndStateNodes();
+      }
+    }
+    // Medium zoom level, show states for US and countries for rest
+    else if (this.currentZoom >= this.STATE_ZOOM) {
+      console.log(
+        `Zoom level ${this.currentZoom.toFixed(2)} >= STATE_ZOOM threshold ${
+          this.STATE_ZOOM
+        } - showing state nodes`
+      );
+      nodes = this.getCountryAndStateNodes();
+    }
+    // Default zoom level, show countries (and US states)
+    else {
+      console.log(
+        `Zoom level ${this.currentZoom.toFixed(2)} < STATE_ZOOM threshold ${
+          this.STATE_ZOOM
+        } - showing country nodes`
+      );
+      nodes = this.getCountryAndStateNodes();
     }
 
-    // Update the chart with new nodes
+    // Update the chart with new nodes, making sure to include all required series properties
     this.chart.setOption({
       series: [
         {
           name: 'Teammates',
+          type: 'scatter',
+          coordinateSystem: 'geo',
           data: nodes,
+          symbolSize: 10,
+          cursor: 'pointer',
+          itemStyle: {
+            color: '#000000',
+            opacity: 1,
+          },
+          emphasis: {
+            scale: true,
+            itemStyle: {
+              color: '#000000',
+            },
+          },
+          zlevel: 2,
         },
       ],
     });
+  }
+
+  /**
+   * Helper method to get combined country and state nodes
+   */
+  private getCountryAndStateNodes(): any[] {
+    return [
+      ...this.stateNodes,
+      ...this.countryNodes.filter((node) => node.country !== 'United States'),
+    ];
   }
 
   /**
@@ -421,7 +582,7 @@ export class TeamDemographicsComponent implements OnInit {
 
     // Group teammates by country, state, and city
     this.teammates.forEach((teammate) => {
-      if (!teammate.coordinates || !teammate.locationId) return;
+      if (!teammate.coordinates) return;
 
       // Country grouping (skip US as we'll use states instead)
       if (teammate.country !== 'United States') {
@@ -440,11 +601,20 @@ export class TeamDemographicsComponent implements OnInit {
         stateGroups.get(stateKey)!.push(teammate);
       }
 
-      // City grouping (using locationId as the key)
-      if (!cityGroups.has(teammate.locationId)) {
-        cityGroups.set(teammate.locationId, []);
+      // City grouping (using locationId as the key for backward compatibility)
+      // If locationId is not available, create a synthetic key from coordinates
+      let locationKey = teammate.locationId;
+      if (locationKey === null) {
+        // Create a synthetic location key from coordinates (encoded to an integer)
+        locationKey =
+          Math.round(teammate.coordinates[0] * 1000) * 10000 +
+          Math.round(teammate.coordinates[1] * 1000);
       }
-      cityGroups.get(teammate.locationId)!.push(teammate);
+
+      if (!cityGroups.has(locationKey)) {
+        cityGroups.set(locationKey, []);
+      }
+      cityGroups.get(locationKey)!.push(teammate);
     });
 
     // Generate country-level nodes (excluding US)
@@ -498,21 +668,40 @@ export class TeamDemographicsComponent implements OnInit {
     this.cityNodes = Array.from(cityGroups.entries())
       .map(([locationId, members]) => {
         const firstMember = members[0];
-        if (!firstMember.coordinates) return null;
+        if (!firstMember.coordinates) {
+          console.warn('Member missing coordinates:', firstMember);
+          return null;
+        }
 
         const [lon, lat] = firstMember.coordinates;
-        return {
+        const cityNode = {
           id: locationId,
-          name: firstMember.city,
+          name: firstMember.city || 'Unknown City',
+          // Format value array correctly for scatter plot with longitude, latitude, size
           value: [lon, lat, members.length],
           city: firstMember.city,
           state: firstMember.state,
           country: firstMember.country,
           memberCount: members.length,
           level: 'city',
+          coordinates: [lon, lat], // Explicitly include coordinates
+          symbolSize: 10, // Set size here too
+          itemStyle: {
+            color: '#000000',
+            opacity: 1,
+          },
         };
+
+        // Log a sample city node to verify structure
+        if (members.length >= 2) {
+          console.log('Sample city node created:', JSON.stringify(cityNode));
+        }
+
+        return cityNode;
       })
       .filter((node) => node !== null);
+
+    console.log(`Created ${this.cityNodes.length} city nodes`);
 
     // Store the cityGroups for tooltip use
     this.locationGroups = cityGroups;
@@ -727,6 +916,8 @@ export class TeamDemographicsComponent implements OnInit {
       state: '',
       country: 'France',
       locationId: null,
+      // Coordinates [longitude, latitude] for Paris
+      coordinates: [2.3522, 48.8566],
       // Optional fields
       timeZone: 'CET',
     };

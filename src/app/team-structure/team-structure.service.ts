@@ -4,21 +4,31 @@ import { Injectable } from '@angular/core';
 export class TeamStructureService {
   getTeamStructureData() {
     return {
-      PortfolioId: 'P001',
-      PortfolioName: 'Enterprise Solutions',
-      PortfolioManager: 'John Doe',
-      TrainId: 'T001',
-      TrainName: 'Core Development',
-      PDTManager: 'Jane Smith',
-      TeamId: 'TEAM01',
-      TeamName: 'Dev Squad',
-      TeamType: 'Feature',
-      Methodology: 'Agile',
-      TeamManager: 'Alice Johnson',
-      AITCount: 3,
-      SPKCount: 2,
-      TPKCount: 1,
-      JiraBoardCount: 0,
+      portfolioId: 101,
+      portfolioName: 'Digital Transformation',
+      portfolioTechMgr: 'Sarah Johnson',
+      children: [
+        {
+          pdtid: 201,
+          pdtname: 'Customer Experience',
+          pdtTechMgr: 'David Rodriguez',
+          children: [
+            {
+              teamId: 301,
+              teamName: 'Mobile Apps',
+              type: 'Feature',
+              methodology: 'Scrum',
+              teamTechmgr: 'Emily Chen',
+              children: [
+                { name: 'AIT', count: 5 },
+                { name: 'Team Backlog', count: 32 },
+                { name: 'SPK', count: 3 },
+                { name: 'Jira Board', count: 0 },
+              ],
+            },
+          ],
+        },
+      ],
     };
   }
 }

@@ -11,13 +11,29 @@ import {
 import * as echarts from 'echarts';
 import { TeamStructureService } from './team-structure.service';
 import { TeamStructureConfigService } from './team-structure-config.service';
-import { ChartFonts, NodeData } from './team-structure.model';
+import {
+  ChartFonts,
+  NodeData,
+  TeamStructureData,
+} from './team-structure.model';
+import { Subscription } from 'rxjs';
+import { AlignmentService, Alignment } from './alignment.service';
+import {
+  GridDataResult,
+  PageChangeEvent,
+  DataStateChangeEvent,
+  SelectableSettings,
+  SelectionEvent,
+} from '@progress/kendo-angular-grid';
+import { SortDescriptor, orderBy } from '@progress/kendo-data-query';
+import { State, process } from '@progress/kendo-data-query';
 
 /**
  * Team Structure Component
  *
  * This component displays an organizational structure diagram using ECharts.
  * It shows relationships between Portfolio, PDT, and Teams with interactive nodes.
+ * When a node is clicked, it displays alignments data in a Kendo grid.
  */
 @Component({
   selector: 'app-team-structure',
@@ -27,11 +43,61 @@ import { ChartFonts, NodeData } from './team-structure.model';
   standalone: false,
 })
 export class TeamStructureComponent implements AfterViewInit, OnDestroy {
+  // -------------- CHART PROPERTIES --------------
+
   /** The ECharts instance */
   private chart: echarts.ECharts | null = null;
 
   /** Currently selected node name (null when no node is selected) */
   selectedNode: string | null = null;
+
+  /** The team structure data from service */
+  private teamStructureData: TeamStructureData | null = null;
+
+  // Store node data counts dynamically
+  nodeDataCounts: Record<string, number> = {
+    AIT: 0,
+    'Team Backlog': 0,
+    SPK: 0,
+    'Jira Board': 0,
+  };
+
+  // -------------- GRID PROPERTIES --------------
+
+  /** Flag to track if a grid row is selected */
+  rowSelected: boolean = false;
+
+  /** Alignment data for the grid */
+  alignmentData: Alignment[] = [];
+
+  /** Selected node ID for alignments */
+  private selectedNodeId: string = '';
+
+  /** Subscriptions to clean up */
+  private subscriptions: Subscription[] = [];
+
+  /** Grid view for Kendo UI Grid */
+  public gridView: GridDataResult = {
+    data: [],
+    total: 0,
+  };
+
+  /** Grid state for Kendo UI Grid */
+  public gridState: State = {
+    sort: [],
+    skip: 0,
+    take: 10,
+    filter: {
+      logic: 'and',
+      filters: [],
+    },
+  };
+
+  /** Selection settings for Kendo UI Grid */
+  public selectableSettings: SelectableSettings = {
+    checkboxOnly: false,
+    mode: 'single',
+  };
 
   /**
    * Constructor
@@ -41,17 +107,19 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
     public changeDetectorRef: ChangeDetectorRef,
     private ngZone: NgZone,
     private configService: TeamStructureConfigService,
-    private teamStructureService: TeamStructureService
+    private teamStructureService: TeamStructureService,
+    private alignmentService: AlignmentService
   ) {}
 
-  private teamStructureData: any;
+  // -------------- LIFECYCLE HOOKS --------------
 
   /**
    * Initialize the chart after the view is initialized
    */
-  ngAfterViewInit() {
+  ngAfterViewInit(): void {
+    // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
     setTimeout(() => {
-      this.teamStructureData = this.teamStructureService.getTeamStructureData();
+      this.loadTeamStructureData();
       this.initChart();
     }, 0);
   }
@@ -59,7 +127,15 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
   /**
    * Clean up resources when the component is destroyed
    */
-  ngOnDestroy() {
+  ngOnDestroy(): void {
+    this.disposeChart();
+    this.unsubscribeAll();
+  }
+
+  /**
+   * Dispose chart to prevent memory leaks
+   */
+  private disposeChart(): void {
     if (this.chart) {
       this.chart.dispose();
       this.chart = null;
@@ -67,155 +143,27 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
   }
 
   /**
-   * Handle window resize events to resize the chart
+   * Unsubscribe from all subscriptions
    */
-  @HostListener('window:resize')
-  onResize() {
-    if (!this.chart) return;
-
-    this.chart.resize();
-
-    const chartDom = document.getElementById('chart') as HTMLElement;
-    if (!chartDom) return;
-
-    const containerWidth = chartDom.offsetWidth;
-    const centerX = containerWidth / 2;
-
-    // Get responsive scale
-    const scale = this.configService.getResponsiveScale(containerWidth);
-
-    // Get font settings based on scale
-    const fonts = this.configService.getChartFonts(scale);
-
-    // Get node positions and update them
-    const options = this.chart.getOption();
-    const nodesOption = this.getNodesFromOption(options);
-    if (!nodesOption) return;
-
-    this.updateNodePositions(
-      nodesOption,
-      containerWidth,
-      centerX,
-      scale,
-      fonts
-    );
-
-    // Set zoom: much larger for small windows
-    let zoom = this.configService.getZoomLevel(scale);
-    if (containerWidth <= 750) {
-      zoom = 0.8;
-    }
-
-    // Update chart options
-    this.chart.setOption({
-      series: [
-        {
-          data: nodesOption,
-          center: ['50%', '45%'],
-          zoom,
-        },
-      ],
-    });
-
-    // Re-apply selected node enlargement if any
-    if (this.selectedNode) {
-      this.updateNodeSizes(
-        this.selectedNode,
-        fonts.mainNodeSize,
-        fonts.teamNodeSize
-      );
-    }
-
-    // Ensure label font sizes update on resize
-    this.updateNodeLabels();
+  private unsubscribeAll(): void {
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
+    this.subscriptions = [];
   }
 
-  private getNodesFromOption(options: any): NodeData[] | null {
-    if (
-      !options ||
-      !options.series ||
-      !Array.isArray(options.series) ||
-      options.series.length === 0
-    ) {
-      return null;
-    }
-
-    const series = options.series[0];
-    if (!series || !series.data || !Array.isArray(series.data)) {
-      return null;
-    }
-
-    return series.data as NodeData[];
+  /**
+   * Load team structure data from service
+   */
+  private loadTeamStructureData(): void {
+    this.teamStructureData = this.teamStructureService.getTeamStructureData();
   }
 
-  private updateNodePositions(
-    nodes: NodeData[],
-    containerWidth: number,
-    centerX: number,
-    scale: number,
-    fonts: ChartFonts
-  ) {
-    // Calculate node positions
-    const nodeSpacing = Math.min(containerWidth / 4, 240 * scale);
-    const portfolioX = centerX - nodeSpacing;
-    const pdtX = centerX;
-    const teamsX = centerX + nodeSpacing;
-
-    const bottomRowSpacing = Math.min(containerWidth / 7, 100 * scale);
-    const bottomRowWidth = 3 * bottomRowSpacing;
-    const bottomRowStartX = teamsX - bottomRowWidth / 2;
-
-    for (const node of nodes) {
-      switch (node.name) {
-        case 'Portfolio':
-        case 'PDT':
-        case 'TEAMS':
-          node.x =
-            node.name === 'Portfolio'
-              ? portfolioX
-              : node.name === 'PDT'
-              ? pdtX
-              : teamsX;
-          node.y = 150 * scale;
-          node.symbolSize = fonts.mainNodeSize;
-          if (node.label?.rich) {
-            node.label.rich.name.fontSize = fonts.mainFont;
-            node.label.rich.title.fontSize = fonts.mainTitleFont;
-          }
-          break;
-        case 'vertical-junction':
-        case 'horizontal-line':
-          node.x = teamsX;
-          node.y = 270 * scale;
-          break;
-        case 'AIT':
-        case 'SPK':
-        case 'TPK':
-        case 'Jira Board':
-          const index = this.configService.NODE_TYPES.CONTRIBUTOR.indexOf(
-            node.name
-          );
-          node.x = bottomRowStartX + index * bottomRowSpacing;
-          node.y = (270 + (380 - 270) * 0.6) * scale;
-          node.symbolSize = fonts.teamNodeSize;
-          break;
-        case 'v1':
-        case 'v2':
-        case 'v3':
-        case 'v4':
-          const vIndex = parseInt(node.name.replace('v', '')) - 1;
-          node.x = bottomRowStartX + vIndex * bottomRowSpacing;
-          node.y = 270 * scale;
-          break;
-      }
-    }
-  }
+  // -------------- CHART INITIALIZATION --------------
 
   /**
    * Initialize the ECharts diagram
    * Creates the tree diagram with interactive nodes
    */
-  private initChart() {
+  private initChart(): void {
     const chartDom = document.getElementById('chart');
     if (!chartDom) {
       console.error('Chart container #chart not found');
@@ -236,7 +184,67 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
     this.setupChartClickHandler();
 
     // Get chart options
-    const option = this.configService.getChartOptions(
+    const option = this.createChartOptions(
+      containerWidth,
+      centerX,
+      scale,
+      fonts
+    );
+
+    // Set zoom for small windows
+    if (containerWidth <= 750) {
+      option.series[0].zoom = 0.8;
+    }
+
+    this.chart.setOption(option as echarts.EChartsOption);
+
+    // Apply formatting and update node labels
+    this.applyChartFormatting();
+  }
+
+  /**
+   * Apply formatting and update node labels after short delay
+   */
+  private applyChartFormatting(): void {
+    setTimeout(() => {
+      if (this.chart) {
+        this.chart.resize();
+        this.onResize();
+        this.updateNodeLabels();
+      }
+    }, 100);
+  }
+
+  /**
+   * Create chart options with current data
+   */
+  private createChartOptions(
+    containerWidth: number,
+    centerX: number,
+    scale: number,
+    fonts: ChartFonts
+  ): any {
+    if (!this.teamStructureData) {
+      return this.configService.getChartOptions(
+        containerWidth,
+        centerX,
+        scale,
+        fonts.mainNodeSize,
+        fonts.teamNodeSize,
+        fonts.mainFont,
+        fonts.mainTitleFont,
+        fonts.memberFont,
+        fonts.memberBoldFont,
+        this.formatNodeLabel.bind(this),
+        this.getNodeLabel.bind(this),
+        '',
+        '',
+        '',
+        null
+      );
+    }
+
+    return this.configService.getChartOptions(
       containerWidth,
       centerX,
       scale,
@@ -248,75 +256,324 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
       fonts.memberBoldFont,
       this.formatNodeLabel.bind(this),
       this.getNodeLabel.bind(this),
-      this.teamStructureData?.PortfolioName ?? '',
-      this.teamStructureData?.TrainName ?? '',
-      this.teamStructureData?.TeamName ?? '',
+      this.teamStructureData.portfolioName ?? '',
+      this.teamStructureData.children?.[0]?.pdtname ?? '',
+      this.teamStructureData.children?.[0]?.children?.[0]?.teamName ?? '',
       this.teamStructureData
+    );
+  }
+
+  // -------------- CHART EVENT HANDLERS --------------
+
+  /**
+   * Handle window resize events to resize the chart
+   */
+  @HostListener('window:resize')
+  onResize(): void {
+    if (!this.chart) return;
+
+    this.chart.resize();
+
+    const chartDom = document.getElementById('chart') as HTMLElement;
+    if (!chartDom) return;
+
+    const containerWidth = chartDom.offsetWidth;
+    const centerX = containerWidth / 2;
+
+    // Get responsive scale and fonts
+    const scale = this.configService.getResponsiveScale(containerWidth);
+    const fonts = this.configService.getChartFonts(scale);
+
+    // Get node positions and update them
+    const options = this.chart.getOption();
+    const nodesOption = this.getNodesFromOption(options);
+    if (!nodesOption) return;
+
+    this.updateNodePositions(
+      nodesOption,
+      containerWidth,
+      centerX,
+      scale,
+      fonts
     );
 
     // Set zoom: much larger for small windows
-    if (containerWidth <= 750) {
-      option.series[0].zoom = 0.8;
-    }
-    this.chart.setOption(option as echarts.EChartsOption);
+    const zoom = this.getZoomForWidth(containerWidth, scale);
 
-    // Apply formatting and update node labels
-    setTimeout(() => {
-      if (this.chart) {
-        this.chart.resize();
-        this.onResize();
-        this.updateNodeLabels();
-      }
-    }, 100);
+    // Update chart options
+    this.chart.setOption({
+      series: [
+        {
+          data: nodesOption,
+          center: ['50%', '50%'],
+          zoom,
+        },
+      ],
+    });
+
+    // Re-apply selected node enlargement if any
+    if (this.selectedNode) {
+      this.updateNodeSizes(
+        this.selectedNode,
+        fonts.mainNodeSize,
+        fonts.teamNodeSize
+      );
+    }
+
+    // Ensure label font sizes update on resize
+    this.updateNodeLabels();
   }
 
-  private setupChartClickHandler() {
+  /**
+   * Get appropriate zoom level based on container width
+   */
+  private getZoomForWidth(containerWidth: number, scale: number): number {
+    if (containerWidth <= 750) {
+      return 0.8;
+    }
+    return this.configService.getZoomLevel(scale);
+  }
+
+  /**
+   * Set up chart click handler
+   */
+  private setupChartClickHandler(): void {
     if (!this.chart) return;
 
     this.chart.on('click', (params: any) => {
-      if (params.dataType !== 'node') return;
-
-      // Skip junction nodes
-      if (
-        params.name.startsWith('v') ||
-        params.name === 'vertical-junction' ||
-        params.name === 'horizontal-line'
-      )
+      // Check if params has necessary data
+      if (!params.data?.name) {
+        console.warn('Chart click event has insufficient data');
         return;
+      }
 
-      // Toggle selection
-      if (this.selectedNode === params.name) {
+      const nodeName = params.data.name as string;
+
+      // Skip non-interactive nodes
+      if (this.isNonInteractiveNode(nodeName)) {
+        return;
+      }
+
+      // Toggle selection - if same node clicked, deselect it
+      if (this.selectedNode === nodeName) {
         this.resetSelectedNode();
         return;
       }
 
-      this.ngZone.run(() => {
-        // Get current scale and font sizes
-        const chartDom = document.getElementById('chart') as HTMLElement;
-        const containerWidth = chartDom.offsetWidth;
-        const scale = this.configService.getResponsiveScale(containerWidth);
-        const fonts = this.configService.getChartFonts(scale);
-
-        this.updateNodeSizes(
-          params.name,
-          fonts.mainNodeSize,
-          fonts.teamNodeSize
-        );
-
-        // Update selected node
-        this.selectedNode = params.name;
-
-        this.updateNodeLabels();
-        this.changeDetectorRef.markForCheck();
-      });
+      this.handleNodeSelection(nodeName);
     });
   }
 
+  /**
+   * Handle node selection when a node is clicked
+   */
+  private handleNodeSelection(nodeName: string): void {
+    // Set selected node
+    this.selectedNode = nodeName;
+
+    // Get node ID based on node type
+    this.selectedNodeId = this.getNodeIdByType(nodeName);
+
+    // Update visual appearance
+    const scale = this.getCurrentScale();
+    const fonts = this.configService.getChartFonts(scale);
+    this.updateNodeSizes(nodeName, fonts.mainNodeSize, fonts.teamNodeSize);
+
+    // Load alignment data for the grid
+    this.loadAlignmentData(nodeName, this.selectedNodeId);
+
+    // Trigger change detection
+    this.changeDetectorRef.markForCheck();
+  }
+
+  // -------------- NODE HELPERS --------------
+
+  /**
+   * Check if a node is non-interactive
+   */
+  private isNonInteractiveNode(nodeName: string): boolean {
+    return [
+      'vertical-junction',
+      'horizontal-line',
+      'v1',
+      'v2',
+      'v3',
+      'v4',
+    ].includes(nodeName);
+  }
+
+  /**
+   * Get node ID based on node type
+   */
+  private getNodeIdByType(nodeName: string): string {
+    if (!this.teamStructureData) return '0';
+
+    switch (nodeName) {
+      case 'Portfolio':
+        return this.teamStructureData.portfolioId?.toString() || '0';
+      case 'PDT':
+        return this.teamStructureData.children?.[0]?.pdtid?.toString() || '0';
+      case 'Team':
+        return (
+          this.teamStructureData.children?.[0]?.children?.[0]?.teamId?.toString() ||
+          '0'
+        );
+      default:
+        return '0';
+    }
+  }
+
+  /**
+   * Get current scale based on chart container width
+   */
+  private getCurrentScale(): number {
+    const chartDom = document.getElementById('chart');
+    return this.configService.getResponsiveScale(chartDom?.offsetWidth || 1000);
+  }
+
+  /**
+   * Extract nodes from chart options
+   */
+  private getNodesFromOption(options: any): NodeData[] | null {
+    if (!options?.series?.[0]?.data || !Array.isArray(options.series[0].data)) {
+      return null;
+    }
+
+    return options.series[0].data as NodeData[];
+  }
+
+  // -------------- NODE POSITIONING AND STYLING --------------
+
+  /**
+   * Update node positions based on container size
+   */
+  private updateNodePositions(
+    nodes: NodeData[],
+    containerWidth: number,
+    centerX: number,
+    scale: number,
+    fonts: ChartFonts
+  ): void {
+    // Calculate node positions
+    const nodeSpacing = Math.min(containerWidth / 4, 240 * scale);
+    const portfolioX = centerX - nodeSpacing;
+    const pdtX = centerX;
+    const teamsX = centerX + nodeSpacing;
+
+    const bottomRowSpacing = Math.min(containerWidth / 7, 100 * scale);
+    const bottomRowWidth = 3 * bottomRowSpacing;
+    const bottomRowStartX = teamsX - bottomRowWidth / 2;
+
+    for (const node of nodes) {
+      this.positionNode(
+        node,
+        portfolioX,
+        pdtX,
+        teamsX,
+        bottomRowStartX,
+        bottomRowSpacing,
+        scale,
+        fonts
+      );
+    }
+  }
+
+  /**
+   * Position a specific node based on its type
+   */
+  private positionNode(
+    node: NodeData,
+    portfolioX: number,
+    pdtX: number,
+    teamsX: number,
+    bottomRowStartX: number,
+    bottomRowSpacing: number,
+    scale: number,
+    fonts: ChartFonts
+  ): void {
+    switch (node.name) {
+      case 'Portfolio':
+      case 'PDT':
+      case 'Team':
+        this.positionMainNode(node, portfolioX, pdtX, teamsX, scale, fonts);
+        break;
+      case 'vertical-junction':
+      case 'horizontal-line':
+        node.x = teamsX;
+        node.y = 270 * scale;
+        break;
+      case 'AIT':
+      case 'SPK':
+      case 'Team Backlog':
+      case 'Jira Board':
+        this.positionContributorNode(
+          node,
+          bottomRowStartX,
+          bottomRowSpacing,
+          scale,
+          fonts
+        );
+        break;
+      case 'v1':
+      case 'v2':
+      case 'v3':
+      case 'v4':
+        const vIndex = parseInt(node.name.replace('v', '')) - 1;
+        node.x = bottomRowStartX + vIndex * bottomRowSpacing;
+        node.y = 270 * scale;
+        break;
+    }
+  }
+
+  /**
+   * Position a main node (Portfolio, PDT, Team)
+   */
+  private positionMainNode(
+    node: NodeData,
+    portfolioX: number,
+    pdtX: number,
+    teamsX: number,
+    scale: number,
+    fonts: ChartFonts
+  ): void {
+    node.x =
+      node.name === 'Portfolio'
+        ? portfolioX
+        : node.name === 'PDT'
+        ? pdtX
+        : teamsX;
+    node.y = 150 * scale;
+    node.symbolSize = fonts.mainNodeSize;
+    if (node.label?.rich) {
+      node.label.rich.name.fontSize = fonts.mainFont;
+      node.label.rich.title.fontSize = fonts.mainTitleFont;
+    }
+  }
+
+  /**
+   * Position a contributor node (AIT, SPK, Team Backlog, Jira Board)
+   */
+  private positionContributorNode(
+    node: NodeData,
+    bottomRowStartX: number,
+    bottomRowSpacing: number,
+    scale: number,
+    fonts: ChartFonts
+  ): void {
+    const index = this.configService.NODE_TYPES.CONTRIBUTOR.indexOf(node.name);
+    node.x = bottomRowStartX + index * bottomRowSpacing;
+    node.y = (270 + (380 - 270) * 0.6) * scale;
+    node.symbolSize = fonts.teamNodeSize;
+  }
+
+  /**
+   * Update node sizes to highlight selected node
+   */
   private updateNodeSizes(
     selectedName: string,
     mainNodeSize: number,
     teamNodeSize: number
-  ) {
+  ): void {
     if (!this.chart) return;
 
     const options = this.chart.getOption();
@@ -326,10 +583,10 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
     const normalSizes: Record<string, number> = {
       Portfolio: mainNodeSize,
       PDT: mainNodeSize,
-      TEAMS: mainNodeSize,
+      Team: mainNodeSize,
       AIT: teamNodeSize,
       SPK: teamNodeSize,
-      TPK: teamNodeSize,
+      'Team Backlog': teamNodeSize,
       'Jira Board': teamNodeSize,
     };
 
@@ -374,14 +631,199 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
     this.chart.setOption({ series: [{ data: nodesOption }] });
   }
 
-  // Add a helper method to format node labels with dynamic sizing
+  /**
+   * Reset selected node state
+   */
+  public resetSelectedNode(): void {
+    if (!this.selectedNode || !this.chart) return;
+
+    // Clear selection state
+    this.selectedNode = null;
+    this.selectedNodeId = '';
+    this.alignmentData = [];
+    this.rowSelected = false;
+
+    // Reset node sizes
+    const scale = this.getCurrentScale();
+    const fonts = this.configService.getChartFonts(scale);
+
+    // Get current nodes
+    const options = this.chart.getOption();
+    const nodes = this.getNodesFromOption(options);
+    if (!nodes) return;
+
+    // Reset all node sizes
+    this.resetAllNodeSizes(nodes, fonts);
+
+    // Trigger change detection
+    this.changeDetectorRef.markForCheck();
+  }
+
+  /**
+   * Reset all nodes to their normal sizes
+   */
+  private resetAllNodeSizes(nodes: NodeData[], fonts: ChartFonts): void {
+    for (const node of nodes) {
+      if (
+        this.configService.NODE_TYPES.MAIN.includes(node.name) ||
+        node.name === 'Team'
+      ) {
+        node.symbolSize = fonts.mainNodeSize;
+      } else if (
+        this.configService.NODE_TYPES.CONTRIBUTOR.includes(node.name)
+      ) {
+        node.symbolSize = fonts.teamNodeSize;
+      }
+    }
+
+    // Update chart
+    this.chart?.setOption({
+      series: [{ data: nodes }],
+    });
+  }
+
+  // -------------- NODE DATA AND LABELS --------------
+
+  /**
+   * Call this after any data change to update nodeDataCounts
+   */
+  private updateNodeDataCounts(): void {
+    // Reset counts
+    this.nodeDataCounts = {
+      AIT: 0,
+      'Team Backlog': 0,
+      SPK: 0,
+      'Jira Board': 0,
+    };
+
+    if (!this.teamStructureData) return;
+
+    // Find the first team's children which contain our node counts
+    const teamChildren =
+      this.teamStructureData.children?.[0]?.children?.[0]?.children;
+
+    if (!teamChildren) return;
+
+    // Update counts from the nested structure
+    teamChildren.forEach((child: any) => {
+      if (this.nodeDataCounts.hasOwnProperty(child.name)) {
+        this.nodeDataCounts[child.name] = child.count;
+      }
+    });
+  }
+
+  /**
+   * Get node label configuration based on node type
+   */
+  private getNodeLabel(nodeName: string): any {
+    // Get current scale to ensure font sizes are consistent
+    const scale = this.getCurrentScale();
+    const fonts = this.configService.getChartFonts(scale);
+
+    // Main nodes: show name and subtitle from teamStructureData
+    if (nodeName === 'Portfolio') {
+      return this.createMainNodeLabel(
+        this.teamStructureData?.portfolioName ?? '',
+        'Portfolio',
+        fonts
+      );
+    }
+
+    if (nodeName === 'PDT') {
+      return this.createMainNodeLabel(
+        this.teamStructureData?.children?.[0]?.pdtname ?? '',
+        'PDT',
+        fonts
+      );
+    }
+
+    if (nodeName === 'Team') {
+      return this.createMainNodeLabel(
+        this.teamStructureData?.children?.[0]?.children?.[0]?.teamName ?? '',
+        'Team',
+        fonts
+      );
+    }
+
+    // Bottom nodes: show count or plus
+    if (this.configService.NODE_TYPES.CONTRIBUTOR.includes(nodeName)) {
+      return this.createContributorNodeLabel(nodeName, fonts);
+    }
+
+    return null;
+  }
+
+  /**
+   * Create label for main nodes (Portfolio, PDT, Team)
+   */
+  private createMainNodeLabel(
+    name: string,
+    title: string,
+    fonts: ChartFonts
+  ): any {
+    return {
+      formatter: `{name|${name}}\n{title|${title}}`,
+      rich: {
+        name: {
+          fontSize: fonts.mainFont,
+          fontWeight: 'normal',
+          lineHeight: 26,
+          color: '#000000',
+          fontFamily: 'Connections, Arial, sans-serif',
+          padding: [0, 0, 0, 0],
+        },
+        title: {
+          fontSize: fonts.mainTitleFont,
+          fontWeight: 'normal',
+          lineHeight: 18,
+          color: '#000000',
+          fontFamily: 'Connections, Arial, sans-serif',
+        },
+      },
+    };
+  }
+
+  /**
+   * Create label for contributor nodes (AIT, Team Backlog, etc.)
+   */
+  private createContributorNodeLabel(nodeName: string, fonts: ChartFonts): any {
+    const count = this.nodeDataCounts[nodeName];
+    const noData = count === 0;
+
+    // Force line break for Team Backlog
+    const displayName =
+      nodeName === 'Team Backlog' ? 'Team\nBacklog' : nodeName;
+
+    return {
+      formatter: noData
+        ? `{name|${displayName}}\n{plus|+}`
+        : `{name|${displayName}}\n{count|${count}}`,
+      rich: {
+        name: {
+          fontSize: fonts.memberBoldFont,
+          fontWeight: 'normal',
+          lineHeight: 18,
+          color: '#000000',
+          fontFamily: 'Connections, Arial, sans-serif',
+        },
+        plus: {
+          fontSize: fonts.memberBoldFont,
+          fontWeight: 'bold',
+          color: '#000000',
+          lineHeight: 24,
+        },
+        count: {
+          fontSize: fonts.memberBoldFont,
+          fontWeight: 'bold',
+          color: '#000000',
+          lineHeight: 20,
+        },
+      },
+    };
+  }
+
   /**
    * Formats a node label with proper text wrapping and dynamic sizing
-   * @param name The main name text to display
-   * @param title The subtitle text to display
-   * @param baseSize The base font size before adjustment
-   * @param isLight Whether the background is light (true) or dark (false)
-   * @returns Formatted label configuration
    */
   private formatNodeLabel(
     name: string,
@@ -389,36 +831,11 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
     baseSize: number,
     isLight: boolean
   ): any {
-    // Handle long names by adding line breaks if needed
-    let nameText = name;
-    const maxLength = 12;
+    // Adjust name text for long names
+    const nameText = this.formatLongText(name, 12);
 
     // Adjust font size based on text length
-    let fontSize = baseSize;
-    if (name.length > 15) {
-      fontSize = baseSize * 0.85;
-    } else if (name.length > 10) {
-      fontSize = baseSize * 0.9;
-    }
-
-    // Add manual line breaks for long text
-    if (name.length > maxLength && !name.includes('\n')) {
-      const halfIndex = Math.floor(name.length / 2);
-      let breakIndex = name.lastIndexOf(' ', halfIndex);
-
-      if (breakIndex === -1 || breakIndex < 3) {
-        breakIndex = name.indexOf(' ', halfIndex);
-      }
-
-      if (breakIndex === -1) {
-        breakIndex = halfIndex;
-      }
-
-      nameText =
-        name.substring(0, breakIndex) +
-        '\n' +
-        name.substring(breakIndex).trim();
-    }
+    const fontSize = this.calculateFontSize(name, baseSize);
 
     return {
       formatter: `{name|${nameText}}\n{title|${title}}`,
@@ -442,176 +859,86 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
     };
   }
 
-  // Store node data counts dynamically
-  nodeDataCounts: Record<string, number> = {
-    AIT: 0,
-    SPK: 0,
-    TPK: 0,
-    'Jira Board': 0,
-  };
+  /**
+   * Format long text by adding line breaks
+   */
+  private formatLongText(text: string, maxLength: number): string {
+    if (text.length <= maxLength || text.includes('\n')) {
+      return text;
+    }
 
-  // Call this after any data change to update nodeDataCounts
-  private updateNodeDataCounts(): void {
-    // Use teamStructureData for counts
-    if (!this.teamStructureData) return;
-    this.nodeDataCounts['AIT'] = this.teamStructureData.AITCount;
-    this.nodeDataCounts['SPK'] = this.teamStructureData.SPKCount;
-    this.nodeDataCounts['TPK'] = this.teamStructureData.TPKCount;
-    this.nodeDataCounts['Jira Board'] = this.teamStructureData.JiraBoardCount;
+    const halfIndex = Math.floor(text.length / 2);
+    let breakIndex = text.lastIndexOf(' ', halfIndex);
+
+    if (breakIndex === -1 || breakIndex < 3) {
+      breakIndex = text.indexOf(' ', halfIndex);
+    }
+
+    if (breakIndex === -1) {
+      breakIndex = halfIndex;
+    }
+
+    return (
+      text.substring(0, breakIndex) + '\n' + text.substring(breakIndex).trim()
+    );
   }
 
   /**
-   * Reset the selected node and chart node sizes/labels
+   * Calculate font size based on text length
    */
-  public resetSelectedNode(): void {
-    this.selectedNode = null;
-
-    if (this.chart) {
-      // Reset all node sizes
-      const options = this.chart.getOption();
-      const nodesOption = this.getNodesFromOption(options);
-      if (!nodesOption) return;
-
-      // Use current scale and font sizes
-      const chartDom = document.getElementById('chart') as HTMLElement;
-      const containerWidth = chartDom.offsetWidth;
-      const scale = this.configService.getResponsiveScale(containerWidth);
-      const fonts = this.configService.getChartFonts(scale);
-      const normalSizes: Record<string, number> = {
-        Portfolio: fonts.mainNodeSize,
-        PDT: fonts.mainNodeSize,
-        TEAMS: fonts.mainNodeSize,
-        AIT: fonts.teamNodeSize,
-        SPK: fonts.teamNodeSize,
-        TPK: fonts.teamNodeSize,
-        'Jira Board': fonts.teamNodeSize,
-      };
-
-      nodesOption.forEach((node: NodeData) => {
-        if (normalSizes[node.name]) {
-          node.symbolSize = normalSizes[node.name];
-        }
-      });
-
-      this.chart.setOption({ series: [{ data: nodesOption }] });
-      this.updateNodeLabels();
-      this.changeDetectorRef.markForCheck();
+  private calculateFontSize(text: string, baseSize: number): number {
+    if (text.length > 15) {
+      return baseSize * 0.85;
     }
+    if (text.length > 10) {
+      return baseSize * 0.9;
+    }
+    return baseSize;
   }
 
-  private getNodeLabel(nodeName: string): any {
-    // Get current scale to ensure font sizes are consistent
-    const chartDom = document.getElementById('chart') as HTMLElement;
-    if (!chartDom) return null;
+  // -------------- GRID FUNCTIONALITY --------------
 
-    const containerWidth = chartDom.offsetWidth;
-    const scale = this.configService.getResponsiveScale(containerWidth);
-    const fonts = this.configService.getChartFonts(scale);
+  /**
+   * Load alignment data based on the selected node
+   */
+  private loadAlignmentData(nodeName: string, nodeId: string): void {
+    // Use the service to get data that matches the chart
+    this.alignmentData = this.alignmentService.getAlignments(
+      nodeName,
+      this.teamStructureData
+    );
+    this.loadGridData();
+  }
 
-    // Main nodes: show name and subtitle from teamStructureData
-    if (nodeName === 'Portfolio') {
-      return {
-        formatter: `{name|${
-          this.teamStructureData?.PortfolioName ?? ''
-        }}\n{title|Portfolio}`,
-        rich: {
-          name: {
-            fontSize: fonts.mainFont,
-            fontWeight: 'normal',
-            lineHeight: 26,
-            color: '#000000',
-            fontFamily: 'Connections, Arial, sans-serif',
-            padding: [0, 0, 0, 0],
-          },
-          title: {
-            fontSize: fonts.mainTitleFont,
-            fontWeight: 'normal',
-            lineHeight: 18,
-            color: '#000000',
-            fontFamily: 'Connections, Arial, sans-serif',
-          },
-        },
-      };
-    }
-    if (nodeName === 'PDT') {
-      return {
-        formatter: `{name|${
-          this.teamStructureData?.TrainName ?? ''
-        }}\n{title|PDT}`,
-        rich: {
-          name: {
-            fontSize: fonts.mainFont,
-            fontWeight: 'normal',
-            lineHeight: 26,
-            color: '#000000',
-            fontFamily: 'Connections, Arial, sans-serif',
-            padding: [0, 0, 0, 0],
-          },
-          title: {
-            fontSize: fonts.mainTitleFont,
-            fontWeight: 'normal',
-            lineHeight: 18,
-            color: '#000000',
-            fontFamily: 'Connections, Arial, sans-serif',
-          },
-        },
-      };
-    }
-    if (nodeName === 'TEAMS') {
-      return {
-        formatter: `{name|${
-          this.teamStructureData?.TeamName ?? ''
-        }}\n{title|Team}`,
-        rich: {
-          name: {
-            fontSize: fonts.mainFont,
-            fontWeight: 'normal',
-            lineHeight: 26,
-            color: '#000000',
-            fontFamily: 'Connections, Arial, sans-serif',
-            padding: [0, 0, 0, 0],
-          },
-          title: {
-            fontSize: fonts.mainTitleFont,
-            fontWeight: 'normal',
-            lineHeight: 18,
-            color: '#000000',
-            fontFamily: 'Connections, Arial, sans-serif',
-          },
-        },
-      };
-    }
-    // Bottom nodes: show count or plus
-    const count = this.nodeDataCounts[nodeName];
-    const noData = count === 0;
-    if (this.configService.NODE_TYPES.CONTRIBUTOR.includes(nodeName)) {
-      return {
-        formatter: noData
-          ? `{name|${nodeName}}\n{plus|+}`
-          : `{name|${nodeName}}\n{count|${count}}`,
-        rich: {
-          name: {
-            fontSize: fonts.memberBoldFont,
-            fontWeight: 'normal',
-            lineHeight: 18,
-            color: '#000000',
-            fontFamily: 'Connections, Arial, sans-serif',
-          },
-          plus: {
-            fontSize: fonts.memberBoldFont,
-            fontWeight: 'bold',
-            color: '#000000',
-            lineHeight: 24,
-          },
-          count: {
-            fontSize: fonts.memberBoldFont,
-            fontWeight: 'bold',
-            color: '#000000',
-            lineHeight: 20,
-          },
-        },
-      };
-    }
-    return null;
+  /**
+   * Process and load data for the grid
+   */
+  private loadGridData(): void {
+    this.gridView = process(this.alignmentData, this.gridState);
+    this.changeDetectorRef.markForCheck();
+  }
+
+  /**
+   * Handle data state changes in the grid
+   */
+  public dataStateChange(state: DataStateChangeEvent): void {
+    this.gridState = state;
+    this.loadGridData();
+  }
+
+  /**
+   * Handle row selection in the grid
+   */
+  public onRowSelect(event: SelectionEvent): void {
+    this.rowSelected = true;
+    this.changeDetectorRef.markForCheck();
+  }
+
+  /**
+   * Handle deselection of rows in the grid
+   */
+  public onRowDeselect(event: SelectionEvent): void {
+    this.rowSelected = false;
+    this.changeDetectorRef.markForCheck();
   }
 }

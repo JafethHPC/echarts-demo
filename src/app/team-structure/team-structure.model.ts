@@ -96,3 +96,38 @@ export interface ChartOptions {
     categories: Array<{ name: string }>;
   }>;
 }
+
+/**
+ * Team structure data interface
+ */
+export interface TeamStructureData {
+  portfolioId?: string | number;
+  portfolioName?: string;
+  children?: PDTData[];
+}
+
+/**
+ * PDT data interface
+ */
+interface PDTData {
+  pdtid?: string | number;
+  pdtname?: string;
+  children?: TeamData[];
+}
+
+/**
+ * Team data interface
+ */
+interface TeamData {
+  teamId?: string | number;
+  teamName?: string;
+  children?: ContributorData[];
+}
+
+/**
+ * Contributor data interface
+ */
+interface ContributorData {
+  name: string;
+  count: number;
+}

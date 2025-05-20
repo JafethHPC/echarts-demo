@@ -1,9 +1,16 @@
+const { pathsToModuleNameMapper } = require("ts-jest");
+const { compilerOptions } = require("./tsconfig.json");
+
 module.exports = {
   preset: "jest-preset-angular",
-  setupFilesAfterEnv: ["<rootDir>/setup-jest.ts"],
+  roots: ["<rootDir>/src/"],
   testMatch: ["**/+(*.)+(spec).+(ts)"],
-  testPathIgnorePatterns: ["/node_modules/", "/dist/"],
-  moduleFileExtensions: ["ts", "html", "js", "json"],
+  collectCoverage: true,
+  coverageReporters: ["html"],
+  coverageDirectory: "coverage",
+  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths || {}, {
+    prefix: "<rootDir>/",
+  }),
   testEnvironment: "jsdom",
   transform: {
     "^.+\\.(ts|js|mjs|html|svg)$": [
@@ -11,6 +18,10 @@ module.exports = {
       {
         tsconfig: "<rootDir>/tsconfig.spec.json",
         stringifyContentPathRegex: "\\.(html|svg)$",
+        isolatedModules: true,
+        diagnostics: {
+          ignoreCodes: [151001],
+        },
       },
     ],
   },

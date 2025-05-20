@@ -14,9 +14,9 @@ import {
 export class TeamStructureConfigService {
   // Node type constants
   readonly NODE_TYPES: NodeTypes = {
-    MAIN: ['Portfolio', 'PDT', 'TEAMS'],
+    MAIN: ['Portfolio', 'PDT', 'Team'],
     JUNCTION: ['vertical-junction', 'horizontal-line'],
-    CONTRIBUTOR: ['AIT', 'SPK', 'TPK', 'Jira Board'],
+    CONTRIBUTOR: ['AIT', 'Team Backlog', 'SPK', 'Jira Board'],
     CONNECTOR: ['v1', 'v2', 'v3', 'v4'],
   };
 
@@ -75,11 +75,12 @@ export class TeamStructureConfigService {
       tooltip: this.getTooltipConfig(teamStructureData),
       series: [
         {
+          animation: false,
           type: 'graph',
           layout: 'none',
           roam: false,
           zoom: 0.95,
-          center: ['50%', '40%'],
+          center: ['50%', '30%'],
           scaleLimit: { min: 0.4, max: 2 },
           label: this.getDefaultLabelConfig(),
           edgeLabel: { show: false },
@@ -132,13 +133,13 @@ export class TeamStructureConfigService {
           categories: [
             { name: 'portfolio' },
             { name: 'pdt' },
-            { name: 'teams' },
+            { name: 'team' },
             { name: 'junction' },
             { name: 'member' },
           ],
         },
       ],
-    };
+    } as any;
   }
 
   // Get tooltip configuration
@@ -148,63 +149,109 @@ export class TeamStructureConfigService {
       backgroundColor: 'rgba(0,0,0,0)',
       borderWidth: 0,
       padding: 0,
+      confine: true,
+      position: function (
+        pos: any,
+        params: any,
+        dom: any,
+        rect: any,
+        size: any
+      ) {
+        // Calculate position to ensure tooltip is fully visible
+        const viewWidth = size.viewSize[0];
+        const viewHeight = size.viewSize[1];
+        const contentWidth = size.contentSize[0];
+        const contentHeight = size.contentSize[1];
+
+        let x = pos[0];
+        let y = pos[1];
+
+        // Prevent tooltip from being cut off on the right
+        if (x + contentWidth > viewWidth) {
+          x = Math.max(0, viewWidth - contentWidth);
+        }
+
+        // Prevent tooltip from being cut off at the bottom
+        if (y + contentHeight > viewHeight) {
+          y = Math.max(0, viewHeight - contentHeight);
+        }
+
+        return [x, y];
+      },
       extraCssText:
         'box-shadow: 0 8px 32px 0 rgba(0,0,0,0.22), 0 1.5px 8px 0 rgba(0,0,0,0.18); border-radius: 10px;',
       formatter: (params: { data: any }) => {
         const data = params.data;
         let content = '';
 
+        // Responsive width and font size
+        let width = 200;
+        let titleFont = 16;
+        let bodyFont = 12;
+        if (window.innerWidth <= 400) {
+          width = 120;
+          titleFont = 11;
+          bodyFont = 9;
+        } else if (window.innerWidth <= 600) {
+          width = 145;
+          titleFont = 12;
+          bodyFont = 10;
+        }
+
         if (data.category === 'portfolio') {
           content = `
-            <div style="background: #E0E0E0; color: #000; padding: 10px; font-weight: normal; font-size: 16px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
-              ${teamStructureData?.PortfolioName ?? ''}
+            <div style="background: #E0E0E0; color: #000; padding: 10px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
+              ${teamStructureData?.portfolioName ?? ''}
             </div>
-            <div style="background: #fff; padding: 10px; font-size: 12px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
+            <div style="background: #fff; padding: 10px; font-size: ${bodyFont}px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
               Portfolio ID<br><span style='color:#888;'>${
-                teamStructureData?.PortfolioId ?? ''
+                teamStructureData?.portfolioId ?? ''
               }</span><br>
               Manager<br><span style='color:#888;'>${
-                teamStructureData?.PortfolioManager ?? ''
+                teamStructureData?.portfolioTechMgr ?? ''
               }</span>
             </div>
           `;
         } else if (data.category === 'pdt') {
+          const pdtData = teamStructureData?.children?.[0] ?? {};
           content = `
-            <div style="background: #C62828; color: #fff; padding: 10px; font-weight: normal; font-size: 16px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
-              ${teamStructureData?.TrainName ?? ''}
+            <div style="background: #C62828; color: #fff; padding: 10px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
+              ${pdtData?.pdtname ?? ''}
             </div>
-            <div style="background: #fff; padding: 10px; font-size: 12px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
-              Train ID<br><span style='color:#888;'>${
-                teamStructureData?.TrainId ?? ''
+            <div style="background: #fff; padding: 10px; font-size: ${bodyFont}px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
+              PDT ID<br><span style='color:#888;'>${
+                pdtData?.pdtid ?? ''
               }</span><br>
               PDT Manager<br><span style='color:#888;'>${
-                teamStructureData?.PDTManager ?? ''
+                pdtData?.pdtTechMgr ?? ''
               }</span>
             </div>
           `;
-        } else if (data.category === 'teams') {
+        } else if (data.category === 'team') {
+          const teamData =
+            teamStructureData?.children?.[0]?.children?.[0] ?? {};
           content = `
-            <div style="background: #012169; color: #fff; padding: 10px; font-weight: normal; font-size: 16px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
-              ${teamStructureData?.TeamName ?? ''}
+            <div style="background: #012169; color: #fff; padding: 10px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
+              ${teamData?.teamName ?? ''}
             </div>
-            <div style="background: #fff; padding: 10px; font-size: 12px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
+            <div style="background: #fff; padding: 10px; font-size: ${bodyFont}px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
               Team ID<br><span style='color:#888;'>${
-                teamStructureData?.TeamId ?? ''
+                teamData?.teamId ?? ''
               }</span><br>
               Team Type<br><span style='color:#888;'>${
-                teamStructureData?.TeamType ?? ''
+                teamData?.type ?? ''
               }</span><br>
               Methodology<br><span style='color:#888;'>${
-                teamStructureData?.Methodology ?? ''
+                teamData?.methodology ?? ''
               }</span><br>
               Team Manager<br><span style='color:#888;'>${
-                teamStructureData?.TeamManager ?? ''
+                teamData?.teamTechmgr ?? ''
               }</span>
             </div>
           `;
         }
 
-        return `<div style="background: transparent; border-radius: 10px; width: 220px; overflow: hidden; box-shadow: none;">${content}</div>`;
+        return `<div style="background: transparent; border-radius: 10px; width: ${width}px; overflow: hidden; box-shadow: none; max-width: 100%;">${content}</div>`;
       },
     };
   }
@@ -256,8 +303,8 @@ export class TeamStructureConfigService {
         label: formatNodeLabel(trainName, 'PDT', mainFont, false),
       },
       {
-        name: 'TEAMS',
-        category: 'teams',
+        name: 'Team',
+        category: 'team',
         x: teamsX,
         y: 150,
         symbolSize: size,
@@ -346,7 +393,7 @@ export class TeamStructureConfigService {
       },
       {
         source: 'PDT',
-        target: 'TEAMS',
+        target: 'Team',
         lineStyle: { width: 1, color: this.COLORS.CONNECTIONS },
       },
     ];
@@ -355,7 +402,7 @@ export class TeamStructureConfigService {
   // Create vertical link from teams to junction
   private createVerticalLink(): LinkData {
     return {
-      source: 'TEAMS',
+      source: 'Team',
       target: 'vertical-junction',
       lineStyle: { width: 1, color: this.COLORS.CONNECTIONS },
     };
@@ -403,13 +450,25 @@ export class TeamStructureConfigService {
 
   // Calculate font sizes based on scale
   getChartFonts(scale: number): ChartFonts {
+    // Check window width for extra small screens
+    const width = window.innerWidth;
+    if (width <= 680) {
+      return {
+        mainNodeSize: 155 * scale, // much smaller
+        teamNodeSize: 85 * scale,
+        mainFont: 18 * scale,
+        mainTitleFont: 12 * scale,
+        memberFont: 12 * scale,
+        memberBoldFont: 13 * scale,
+      };
+    }
     return {
       mainNodeSize: 210 * scale,
-      teamNodeSize: 100 * scale,
+      teamNodeSize: 85 * scale,
       mainFont: 19 * 1.2 * scale,
       mainTitleFont: 15 * 1.2 * scale,
-      memberFont: 14 * scale,
-      memberBoldFont: 16 * scale,
+      memberFont: 12 * scale,
+      memberBoldFont: 13 * scale,
     };
   }
 }

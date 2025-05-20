@@ -1,3 +1,28 @@
+<!-- Stats Row -->
+<div class="stats-row">
+  <div class="stat-box">
+    Team Size<br /><b>{{ teamSize }}</b>
+  </div>
+  <div class="stat-box">
+    Locations<br /><b>{{ uniqueLocations }}</b>
+  </div>
+  <div class="stat-box">
+    Software/Data Engineers<br /><b>{{ numSoftwareEngineers }}</b>
+  </div>
+  <div class="stat-box">
+    Quality Specialists<br /><b>{{ numQualitySpecialists }}</b>
+  </div>
+  <div class="stat-box">
+    Scrum Masters<br /><b>{{ numScrumMasters }}</b>
+  </div>
+  <div class="stat-box">
+    Product Owners<br /><b>{{ numProductOwners }}</b>
+  </div>
+  <div class="stat-box" *ngIf="numAppControlSpecialists > 0">
+    App Control Specialists<br /><b>{{ numAppControlSpecialists }}</b>
+  </div>
+</div>
+
 <div class="chart-container">
   <div *ngIf="isLoadingData" class="loading-overlay">
     <div class="loading-spinner"></div>
