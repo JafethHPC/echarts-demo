@@ -6,7 +6,6 @@ import {
   ElementRef,
   ChangeDetectorRef,
   ChangeDetectionStrategy,
-  NgZone,
 } from '@angular/core';
 import * as echarts from 'echarts';
 import { TeamStructureService } from './team-structure.service';
@@ -20,13 +19,11 @@ import { Subscription } from 'rxjs';
 import { AlignmentService, Alignment } from './alignment.service';
 import {
   GridDataResult,
-  PageChangeEvent,
   DataStateChangeEvent,
   SelectableSettings,
   SelectionEvent,
 } from '@progress/kendo-angular-grid';
-import { SortDescriptor, orderBy } from '@progress/kendo-data-query';
-import { State, process } from '@progress/kendo-data-query';
+import { State } from '@progress/kendo-data-query';
 
 /**
  * Team Structure Component
@@ -105,7 +102,6 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
   constructor(
     private elementRef: ElementRef,
     public changeDetectorRef: ChangeDetectorRef,
-    private ngZone: NgZone,
     private configService: TeamStructureConfigService,
     private teamStructureService: TeamStructureService,
     private alignmentService: AlignmentService
@@ -166,7 +162,6 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
   private initChart(): void {
     const chartDom = document.getElementById('chart');
     if (!chartDom) {
-      console.error('Chart container #chart not found');
       return;
     }
 
@@ -343,7 +338,6 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
     this.chart.on('click', (params: any) => {
       // Check if params has necessary data
       if (!params.data?.name) {
-        console.warn('Chart click event has insufficient data');
         return;
       }
 
@@ -373,6 +367,9 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
 
     // Get node ID based on node type
     this.selectedNodeId = this.getNodeIdByType(nodeName);
+
+    // Reset row selection state when switching nodes
+    this.rowSelected = false;
 
     // Update visual appearance
     const scale = this.getCurrentScale();
@@ -426,7 +423,7 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
   /**
    * Get current scale based on chart container width
    */
-  private getCurrentScale(): number {
+  public getCurrentScale(): number {
     const chartDom = document.getElementById('chart');
     return this.configService.getResponsiveScale(chartDom?.offsetWidth || 1000);
   }
@@ -900,45 +897,81 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
 
   /**
    * Load alignment data based on the selected node
+   * Gets data from AlignmentService and processes it for the grid
    */
   private loadAlignmentData(nodeName: string, nodeId: string): void {
-    // Use the service to get data that matches the chart
+    // Get the alignment data from the service based on the selected node
     this.alignmentData = this.alignmentService.getAlignments(
       nodeName,
-      this.teamStructureData
+      this.teamStructureData || {}
     );
-    this.loadGridData();
+
+    // Process the data with current grid state
+    this.updateGridView();
   }
 
   /**
-   * Process and load data for the grid
+   * Update grid view with current alignment data and grid state
+   * Uses simplified data handling for better performance
    */
-  private loadGridData(): void {
-    this.gridView = process(this.alignmentData, this.gridState);
+  private updateGridView(): void {
+    if (!this.alignmentData.length) {
+      this.gridView = { data: [], total: 0 };
+      return;
+    }
+
+    const skip = this.gridState.skip || 0;
+    const take = this.gridState.take || 10;
+
+    // Apply pagination
+    const paginatedData = this.alignmentData.slice(skip, skip + take);
+
+    this.gridView = {
+      data: paginatedData,
+      total: this.alignmentData.length,
+    };
+
+    // Trigger change detection to update the UI
     this.changeDetectorRef.markForCheck();
   }
 
   /**
-   * Handle data state changes in the grid
+   * Handle data state changes in the grid (sorting, filtering, paging)
    */
   public dataStateChange(state: DataStateChangeEvent): void {
     this.gridState = state;
-    this.loadGridData();
+
+    // If we have sort state, apply it
+    if (state.sort && state.sort.length > 0) {
+      const dir = state.sort[0].dir === 'asc';
+      const field = state.sort[0].field;
+
+      this.alignmentData = [...this.alignmentData].sort((a: any, b: any) => {
+        const valA = a[field];
+        const valB = b[field];
+
+        if (valA < valB) return dir ? -1 : 1;
+        if (valA > valB) return dir ? 1 : -1;
+        return 0;
+      });
+    }
+
+    this.updateGridView();
   }
 
   /**
    * Handle row selection in the grid
    */
   public onRowSelect(event: SelectionEvent): void {
-    this.rowSelected = true;
-    this.changeDetectorRef.markForCheck();
-  }
+    // Check selection status
+    const hasSelectedRows = !!(
+      event.selectedRows && event.selectedRows.length > 0
+    );
 
-  /**
-   * Handle deselection of rows in the grid
-   */
-  public onRowDeselect(event: SelectionEvent): void {
-    this.rowSelected = false;
+    // Always set a definitive true/false value based on selected rows
+    this.rowSelected = hasSelectedRows;
+
+    // Force change detection to update the UI
     this.changeDetectorRef.markForCheck();
   }
 }

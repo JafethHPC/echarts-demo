@@ -1,0 +1,82 @@
+<div class="alignment-container">
+  <div class="table-header" *ngIf="title">
+    <h3>{{ title }}</h3>
+    <div class="action-buttons" *ngIf="showActionButtons">
+      <ng-container *ngIf="actions.includes('add') && showJiraColumns">
+        <button class="btn btn-add" title="Add" (click)="onAddClick()">
+          Add
+          <div class="icon-wrapper"><mat-icon>add</mat-icon></div>
+        </button>
+      </ng-container>
+      <ng-container *ngIf="actions.includes('delete') && showJiraColumns">
+        <button
+          class="btn btn-delete"
+          [class.btn-delete-selected]="rowSelected"
+          title="Delete"
+          [disabled]="!rowSelected"
+          (click)="onDeleteClick()"
+        >
+          Delete
+          <div class="icon-wrapper"><mat-icon>delete</mat-icon></div>
+        </button>
+      </ng-container>
+      <ng-container *ngIf="actions.includes('manage')">
+        <button
+          class="btn btn-manage"
+          title="Manage Columns"
+          (click)="onManageColumnsClick()"
+        >
+          Manage Columns
+          <div class="icon-wrapper"><mat-icon>settings</mat-icon></div>
+        </button>
+      </ng-container>
+      <ng-container *ngIf="actions.includes('export')">
+        <button class="btn btn-export" title="Export" (click)="onExportClick()">
+          Export
+          <div class="icon-wrapper"><mat-icon>download</mat-icon></div>
+        </button>
+      </ng-container>
+    </div>
+  </div>
+
+  <kendo-grid
+    [data]="data"
+    [pageSize]="state.take"
+    [skip]="state.skip"
+    [sort]="state.sort"
+    [filter]="state.filter"
+    [sortable]="true"
+    [pageable]="true"
+    [filterable]="true"
+    [selectable]="selectableSettings"
+    (dataStateChange)="onDataStateChange($event)"
+    (selectionChange)="onSelectionChange($event)"
+    [loading]="loading"
+  >
+    <kendo-grid-column
+      field="alignToId"
+      title="ID"
+      [filterable]="true"
+    ></kendo-grid-column>
+    <kendo-grid-column
+      field="alignToName"
+      title="Name"
+      [filterable]="true"
+    ></kendo-grid-column>
+    <kendo-grid-column
+      *ngIf="showJiraColumns"
+      field="jiraInstance"
+      title="Jira Instance"
+      [filterable]="true"
+    >
+    </kendo-grid-column>
+    <kendo-grid-column
+      *ngIf="showTeamColumns"
+      field="techManagerName"
+      title="Tech Manager"
+      [filterable]="true"
+    >
+    </kendo-grid-column>
+    <ng-content></ng-content>
+  </kendo-grid>
+</div>

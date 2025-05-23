@@ -13,7 +13,7 @@
     <div class="legend-item">
       <span
         class="legend-circle"
-        style="background: #fff; border: 1px solid #000"
+        style="background: #fff; border: 1px solid #ccc"
       ></span>
       Contributor
     </div>
@@ -23,82 +23,16 @@
 
 <!-- Alignments Grid -->
 <div class="alignments-container" *ngIf="selectedNode">
-  <div class="table-header">
-    <h3>{{ selectedNode }} Details</h3>
-    <div class="action-buttons">
-      <ng-container
-        *ngIf="
-          selectedNode === 'AIT' ||
-          selectedNode === 'Team Backlog' ||
-          selectedNode === 'SPK' ||
-          selectedNode === 'Jira Board'
-        "
-      >
-        <button class="btn btn-add" title="Add">
-          Add
-          <span class="material-icons">add</span>
-        </button>
-        <button class="btn btn-delete" title="Delete" [disabled]="!rowSelected">
-          Delete
-          <span class="material-icons">delete</span>
-        </button>
-      </ng-container>
-      <button class="btn btn-manage" title="Manage Columns">
-        Manage Columns
-        <span class="material-icons">settings</span>
-      </button>
-      <button class="btn btn-export" title="Export">
-        Export
-        <span class="material-icons">download</span>
-      </button>
-    </div>
-  </div>
-
-  <kendo-grid
+  <app-alignment
+    [title]="selectedNode + ' Details'"
     [data]="gridView"
-    [pageSize]="gridState.take"
-    [skip]="gridState.skip"
-    [sort]="gridState.sort"
-    [filter]="gridState.filter"
-    [sortable]="true"
-    [pageable]="true"
-    [filterable]="true"
-    [selectable]="selectableSettings"
+    [state]="gridState"
+    [selectableSettings]="selectableSettings"
+    [loading]="false"
+    [rowSelected]="rowSelected"
+    [nodeType]="selectedNode"
+    [scale]="getCurrentScale()"
     (dataStateChange)="dataStateChange($event)"
     (selectionChange)="onRowSelect($event)"
-    [loading]="false"
-  >
-    <kendo-grid-column
-      field="alignToId"
-      title="ID"
-      [filterable]="true"
-    ></kendo-grid-column>
-    <kendo-grid-column
-      field="alignToName"
-      title="Name"
-      [filterable]="true"
-    ></kendo-grid-column>
-    <kendo-grid-column
-      *ngIf="
-        selectedNode === 'Jira Board' ||
-        selectedNode === 'Team Backlog' ||
-        selectedNode === 'SPK'
-      "
-      field="jiraInstance"
-      title="Jira Instance"
-      [filterable]="true"
-    >
-    </kendo-grid-column>
-    <kendo-grid-column
-      *ngIf="
-        selectedNode === 'Team' ||
-        selectedNode === 'PDT' ||
-        selectedNode === 'Portfolio'
-      "
-      field="techManagerName"
-      title="Tech Manager"
-      [filterable]="true"
-    >
-    </kendo-grid-column>
-  </kendo-grid>
+  ></app-alignment>
 </div>

@@ -5,6 +5,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { NgxEchartsModule } from 'ngx-echarts';
+import { MatIconModule } from '@angular/material/icon';
 
 import { AppComponent } from './app.component';
 import { routes } from './app.routes';
@@ -19,6 +20,7 @@ import { TeamDemographicsModule } from './team-demographics/team-demographics.mo
     HttpClientModule,
     RouterModule.forRoot(routes),
     FormsModule,
+    MatIconModule,
     NgxEchartsModule.forRoot({
       echarts: () => import('echarts'),
     }),

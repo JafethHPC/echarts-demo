@@ -54,8 +54,15 @@ export class TeamStructureConfigService {
     teamName: string,
     teamStructureData: any
   ): ChartOptions {
-    // Calculate node positions
-    const nodeSpacing = Math.min(containerWidth / 4, 240 * scale);
+    // Calculate node positions with adjusted spacing for small screens
+    let nodeSpacing = Math.min(containerWidth / 6, 240 * scale);
+
+    // When at smallest size, adjust spacing to be more equal
+    if (scale < 1) {
+      // Increase spacing to create more equal distribution
+      nodeSpacing = Math.min(containerWidth / 3.5, 240 * scale);
+    }
+
     const portfolioX = centerX - nodeSpacing;
     const pdtX = centerX;
     const teamsX = centerX + nodeSpacing;
@@ -179,31 +186,47 @@ export class TeamStructureConfigService {
         return [x, y];
       },
       extraCssText:
-        'box-shadow: 0 8px 32px 0 rgba(0,0,0,0.22), 0 1.5px 8px 0 rgba(0,0,0,0.18); border-radius: 10px;',
+        'box-shadow: 0 0 8px 0 rgba(0,0,0,0.6); border-radius: 10px;',
       formatter: (params: { data: any }) => {
         const data = params.data;
         let content = '';
 
-        // Responsive width and font size
-        let width = 200;
-        let titleFont = 16;
+        // Get responsive scale to match chart behavior
+        const containerWidth = window.innerWidth;
+        const scale = this.getResponsiveScale(containerWidth);
+
+        // Responsive width and font size - much smaller for better proportions
+        let width = 160;
+        let titleFont = 15;
         let bodyFont = 12;
-        if (window.innerWidth <= 400) {
-          width = 120;
-          titleFont = 11;
-          bodyFont = 9;
-        } else if (window.innerWidth <= 600) {
-          width = 145;
-          titleFont = 12;
-          bodyFont = 10;
+        let padding = 8;
+
+        if (containerWidth <= 680) {
+          // Extra small screens - very compact
+          width = Math.max(100, containerWidth * 0.25);
+          titleFont = Math.round(12 * scale);
+          bodyFont = Math.round(10 * scale);
+          padding = 6;
+        } else if (containerWidth <= 930) {
+          // Medium screens - compact
+          width = Math.max(120, containerWidth * 0.18);
+          titleFont = Math.round(13 * scale);
+          bodyFont = Math.round(11 * scale);
+          padding = 7;
+        } else {
+          // Large screens - wider to accommodate longer titles
+          width = Math.min(200, containerWidth * 0.18);
+          titleFont = Math.round(15 * scale);
+          bodyFont = Math.round(12 * scale);
+          padding = 8;
         }
 
         if (data.category === 'portfolio') {
           content = `
-            <div style="background: #E0E0E0; color: #000; padding: 10px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
+            <div style="background: #E0E0E0; color: #000; padding: ${padding}px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
               ${teamStructureData?.portfolioName ?? ''}
             </div>
-            <div style="background: #fff; padding: 10px; font-size: ${bodyFont}px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
+            <div style="background: #fff; padding: ${padding}px; font-size: ${bodyFont}px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
               Portfolio ID<br><span style='color:#888;'>${
                 teamStructureData?.portfolioId ?? ''
               }</span><br>
@@ -215,10 +238,10 @@ export class TeamStructureConfigService {
         } else if (data.category === 'pdt') {
           const pdtData = teamStructureData?.children?.[0] ?? {};
           content = `
-            <div style="background: #C62828; color: #fff; padding: 10px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
+            <div style="background: #C62828; color: #fff; padding: ${padding}px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
               ${pdtData?.pdtname ?? ''}
             </div>
-            <div style="background: #fff; padding: 10px; font-size: ${bodyFont}px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
+            <div style="background: #fff; padding: ${padding}px; font-size: ${bodyFont}px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
               PDT ID<br><span style='color:#888;'>${
                 pdtData?.pdtid ?? ''
               }</span><br>
@@ -231,10 +254,10 @@ export class TeamStructureConfigService {
           const teamData =
             teamStructureData?.children?.[0]?.children?.[0] ?? {};
           content = `
-            <div style="background: #012169; color: #fff; padding: 10px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
+            <div style="background: #012169; color: #fff; padding: ${padding}px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
               ${teamData?.teamName ?? ''}
             </div>
-            <div style="background: #fff; padding: 10px; font-size: ${bodyFont}px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
+            <div style="background: #fff; padding: ${padding}px; font-size: ${bodyFont}px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
               Team ID<br><span style='color:#888;'>${
                 teamData?.teamId ?? ''
               }</span><br>
@@ -246,6 +269,9 @@ export class TeamStructureConfigService {
               }</span><br>
               Team Manager<br><span style='color:#888;'>${
                 teamData?.teamTechmgr ?? ''
+              }</span><br>
+              Team POC<br><span style='color:#888;'>${
+                teamData?.teamPOC ?? ''
               }</span>
             </div>
           `;
@@ -321,18 +347,8 @@ export class TeamStructureConfigService {
         name: 'vertical-junction',
         category: 'junction',
         x: teamsX,
-        y: 270,
+        y: 280,
         symbolSize: 0,
-        itemStyle: { color: 'rgba(0,0,0,0)' },
-        label: { show: false },
-      },
-      {
-        name: 'horizontal-line',
-        category: 'junction',
-        x: teamsX,
-        y: 270,
-        symbolSize: 0,
-        fixed: true,
         itemStyle: { color: 'rgba(0,0,0,0)' },
         label: { show: false },
       },
@@ -352,7 +368,7 @@ export class TeamStructureConfigService {
       name,
       category: 'member',
       x: startX + index * spacing,
-      y: 380,
+      y: 440,
       symbolSize: size,
       symbol: 'circle',
       itemStyle: {
@@ -376,7 +392,7 @@ export class TeamStructureConfigService {
       name: `v${i}`,
       category: 'junction',
       x: startX + (i - 1) * spacing,
-      y: 270,
+      y: 280,
       symbolSize: 0,
       itemStyle: { color: 'rgba(0,0,0,0)' },
       label: { show: false },
@@ -437,7 +453,7 @@ export class TeamStructureConfigService {
 
   // Get responsive scale based on container width
   getResponsiveScale(containerWidth: number): number {
-    if (containerWidth > 825) return 1;
+    if (containerWidth > 930) return 1;
     return 0.75;
   }
 
