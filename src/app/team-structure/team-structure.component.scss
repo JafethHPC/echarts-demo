@@ -1,4 +1,7 @@
-/* Base font for the component */
+/* ============================================================================
+   BASE STYLES
+   ============================================================================ */
+
 :host {
   font-family: "Connections", Arial, sans-serif;
   display: block;
@@ -6,237 +9,38 @@
   height: 100%;
 }
 
-/* Chart container styling */
+/* ============================================================================
+   CHART CONTAINER & CHART
+   ============================================================================ */
+
 .chart-container {
   width: 100%;
-  height: auto;
-  min-height: 420px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  padding-bottom: 10px;
+  padding: 0;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 10px 0 0 0;
+  }
 }
 
-/* Chart styling */
 #chart {
   width: 100%;
   height: 100%;
-  min-height: 420px;
-  margin: 20px auto 0;
+  margin: 0 auto;
 }
 
-/* Alignments container styling */
-.alignments-container {
-  width: 100%;
-  margin-top: 20px;
-  padding: 0 20px 20px;
-  box-sizing: border-box;
+/* ============================================================================
+   LEGEND STYLES
+   ============================================================================ */
 
-  h3 {
-    margin-bottom: 15px;
-    font-size: 1.3rem;
-    color: #333;
-    font-weight: 500;
-  }
-
-  .table-header {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-end;
-    justify-content: space-between;
-    margin-bottom: 8px;
-
-    h3 {
-      margin-bottom: 0;
-      font-size: 1.2rem;
-      font-weight: 400;
-      color: #444;
-    }
-  }
-
-  .table-filter-row {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 8px;
-  }
-
-  .table-filter-input {
-    padding: 4px 10px;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    font-size: 0.92rem;
-    background: #fafafa;
-    color: #222;
-    outline: none;
-    min-width: 180px;
-  }
-
-  .action-buttons {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-
-    .btn {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      padding: 6px 14px;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      background-color: white;
-      color: #111;
-      font-size: 0.85rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-
-      .material-icons {
-        font-size: 16px;
-        color: #111;
-      }
-
-      &:hover {
-        background-color: #012169;
-        color: #fff;
-        box-shadow: none;
-        border-color: #012169;
-        .material-icons {
-          color: #fff;
-        }
-      }
-
-      &:disabled {
-        opacity: 1;
-        cursor: not-allowed;
-        background-color: #e0e0e0;
-        color: #111;
-        border-color: #e0e0e0;
-
-        .material-icons {
-          color: #111;
-        }
-
-        &:hover {
-          background-color: #e0e0e0;
-          box-shadow: none;
-        }
-      }
-
-      &.btn-add,
-      &.btn-delete,
-      &.btn-manage,
-      &.btn-export {
-        color: #111;
-        border-color: #e0e0e0;
-        background-color: white;
-
-        &:hover {
-          background-color: #012169;
-          color: #fff;
-          border-color: #012169;
-          box-shadow: none;
-        }
-      }
-
-      &.btn-delete {
-        // Gray when disabled (no row selected)
-        &:disabled {
-          background-color: #e0e0e0;
-          color: #666;
-          border-color: #e0e0e0;
-
-          .material-icons {
-            color: #666;
-          }
-
-          &:hover {
-            background-color: #e0e0e0;
-            color: #666;
-            border-color: #e0e0e0;
-            box-shadow: none;
-          }
-        }
-
-        // Red when enabled (row selected)
-        &:not(:disabled) {
-          &:hover {
-            background-color: #c62828; // PDT node color
-            color: #fff;
-            border-color: #c62828;
-
-            .material-icons {
-              color: #fff;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  .no-data-message {
-    background-color: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 4px;
-    padding: 15px;
-    margin-bottom: 15px;
-    text-align: center;
-    color: #666;
-    font-size: 0.9rem;
-  }
-
-  /* Removed all Kendo Grid customizations to use the default Kendo theme */
-}
-
-/* Debug info styling */
-.debug-info {
-  margin-bottom: 15px;
-  padding: 10px;
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.debug-info p {
-  margin: 5px 0;
-}
-
-/* Remove all table-related styles from here */
-
-/* Custom scrollbar styles */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cccccc;
-  border-radius: 3px;
-
-  &:hover {
-    background: #bbbbbb;
-  }
-}
-
-/* For Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #cccccc transparent;
-}
-
-/* Legend styles */
 .legend-container {
   position: absolute;
-  top: 0.2rem;
-  right: 0.7rem;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -247,6 +51,26 @@
   background: #fff;
   padding: 0.32rem 1.1rem;
   box-shadow: none;
+
+  // Default position (top-right)
+  top: 0.2rem;
+  right: 0.7rem;
+
+  // Top-center position class (applied via TypeScript)
+  &.legend-top-center {
+    top: 0.2rem;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+
+  // Top-right position class (applied via TypeScript)
+  &.legend-top-right {
+    top: 0.2rem;
+    right: 0.7rem;
+    left: auto;
+    transform: none;
+  }
 }
 
 .legend-item {
@@ -266,42 +90,97 @@
   vertical-align: middle;
 }
 
-/* Responsive styles */
-@media (min-width: 931px) {
-  .chart-container {
-    min-height: 420px;
+/* ============================================================================
+   ALIGNMENTS CONTAINER
+   ============================================================================ */
+
+.alignments-container {
+  width: 100%;
+  margin-top: 20px;
+  padding: 0 20px 20px;
+  box-sizing: border-box;
+
+  h3 {
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    color: #333;
+    font-weight: 500;
   }
 
-  #chart {
-    min-height: 420px;
+  .no-data-message {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
   }
 }
 
+/* ============================================================================
+   DEBUG INFO (Development only)
+   ============================================================================ */
+
+.debug-info {
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  font-size: 14px;
+
+  p {
+    margin: 5px 0;
+  }
+}
+
+/* ============================================================================
+   SCROLLBAR CUSTOMIZATION
+   ============================================================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cccccc;
+  border-radius: 3px;
+
+  &:hover {
+    background: #bbbbbb;
+  }
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cccccc transparent;
+}
+
+/* ============================================================================
+   RESPONSIVE BREAKPOINTS
+   ============================================================================ */
+
+/* Large screens */
 @media (min-width: 1200px) {
-  .chart-container {
-    min-height: 480px;
-  }
-
-  #chart {
-    min-height: 480px;
-  }
+  // Heights are now managed dynamically by TypeScript
 }
 
-@media (max-width: 930px) {
-  .legend-item {
-    font-size: 0.85rem;
-  }
-  .legend-circle {
-    width: 13px;
-    height: 13px;
-  }
-  .chart-container {
-    min-height: 300px;
-  }
+/* Medium-large screens */
+@media (min-width: 931px) {
+  // Heights are now managed dynamically by TypeScript
+}
 
-  #chart {
-    min-height: 300px;
-  }
+/* Medium screens */
+@media (max-width: 930px) {
+  // Heights are now managed dynamically by TypeScript
 
   .alignments-container {
     padding: 0 10px 10px;
@@ -309,35 +188,29 @@
     h3 {
       font-size: 1.1rem;
     }
-    .action-buttons .btn {
-      font-size: 0.75rem;
-      padding: 4px 10px;
-      border-radius: 6px;
-      gap: 5px;
-    }
-    .action-buttons .material-icons {
-      font-size: 14px;
-    }
   }
 }
 
+/* Small screens */
+@media (max-width: 768px) {
+  .legend-item {
+    font-size: 0.85rem;
+  }
+
+  .legend-circle {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+/* Extra small screens */
 @media (max-width: 600px) {
   .legend-item {
-    font-size: 0.7rem;
+    font-size: 0.85rem;
   }
+
   .legend-circle {
-    width: 10px;
-    height: 10px;
-  }
-  .alignments-container {
-    .action-buttons .btn {
-      font-size: 0.68rem;
-      padding: 3px 7px;
-      border-radius: 5px;
-      gap: 3px;
-    }
-    .action-buttons .material-icons {
-      font-size: 12px;
-    }
+    width: 13px;
+    height: 13px;
   }
 }

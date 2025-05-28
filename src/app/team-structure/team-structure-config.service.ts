@@ -7,6 +7,7 @@ import {
   LinkData,
   ChartFonts,
 } from './team-structure.model';
+import { AlignmentType } from './alignment.service';
 
 @Injectable({
   providedIn: 'root',
@@ -54,31 +55,38 @@ export class TeamStructureConfigService {
     teamName: string,
     teamStructureData: any
   ): ChartOptions {
-    // Calculate node positions with adjusted spacing for small screens
-    let nodeSpacing = Math.min(containerWidth / 6, 240 * scale);
+    // Calculate node positions using centralized method
+    const positions = this.calculateNodePositions(
+      containerWidth,
+      centerX,
+      scale,
+      mainNodeSize
+    );
 
-    // When at smallest size, adjust spacing to be more equal
-    if (scale < 1) {
-      // Increase spacing to create more equal distribution
-      nodeSpacing = Math.min(containerWidth / 3.5, 240 * scale);
-    }
+    // Different settings for vertical vs horizontal layout
+    const isVerticalLayout = positions.isVerticalLayout;
+    const gridConfig = isVerticalLayout
+      ? {
+          left: '0%',
+          right: '0%',
+          top: '3%',
+          bottom: '15%', // More bottom margin for vertical layout
+          containLabel: true,
+        }
+      : {
+          left: '0%',
+          right: '0%',
+          top: '5%',
+          bottom: '10%',
+          containLabel: true,
+        };
 
-    const portfolioX = centerX - nodeSpacing;
-    const pdtX = centerX;
-    const teamsX = centerX + nodeSpacing;
-
-    const bottomRowSpacing = Math.min(containerWidth / 7, 100 * scale);
-    const bottomRowWidth = 3 * bottomRowSpacing;
-    const bottomRowStartX = teamsX - bottomRowWidth / 2;
+    const centerConfig = isVerticalLayout
+      ? ['50%', '50%'] // Perfect center for vertical layout
+      : ['55%', '50%']; // Slightly right for horizontal layout
 
     return {
-      grid: {
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
-        containLabel: true,
-      },
+      grid: gridConfig,
       tooltip: this.getTooltipConfig(teamStructureData),
       series: [
         {
@@ -86,32 +94,37 @@ export class TeamStructureConfigService {
           type: 'graph',
           layout: 'none',
           roam: false,
-          zoom: 0.95,
-          center: ['50%', '30%'],
-          scaleLimit: { min: 0.4, max: 2 },
+          zoom: 0.95, // Revert to 1, rely on positioning and node sizes
+          center: centerConfig,
+          scaleLimit: { min: 0.3, max: 3 },
           label: this.getDefaultLabelConfig(),
           edgeLabel: { show: false },
           data: [
             // Main nodes
             ...this.createMainNodes(
-              portfolioX,
-              pdtX,
-              teamsX,
+              positions.portfolioX,
+              positions.pdtX,
+              positions.teamsX,
+              positions.portfolioY,
+              positions.pdtY,
+              positions.teamsY,
               mainNodeSize,
               mainFont,
               formatNodeLabel,
+              getNodeLabel,
               portfolioName,
               trainName,
               teamName
             ),
 
             // Junction nodes
-            ...this.createJunctionNodes(teamsX),
+            ...this.createJunctionNodes(positions.teamsX, positions.junctionY),
 
             // Bottom row nodes
             ...this.createContributorNodes(
-              bottomRowStartX,
-              bottomRowSpacing,
+              positions.bottomRowStartX,
+              positions.bottomRowSpacing,
+              positions.contributorsY,
               teamNodeSize,
               memberFont,
               memberBoldFont,
@@ -119,7 +132,11 @@ export class TeamStructureConfigService {
             ),
 
             // Vertical connection nodes
-            ...this.createConnectorNodes(bottomRowStartX, bottomRowSpacing),
+            ...this.createConnectorNodes(
+              positions.bottomRowStartX,
+              positions.bottomRowSpacing,
+              positions.horizontalConnectorsY
+            ),
           ],
           links: [
             // Horizontal connections between main nodes
@@ -191,55 +208,65 @@ export class TeamStructureConfigService {
         const data = params.data;
         let content = '';
 
-        // Get responsive scale to match chart behavior
-        const containerWidth = window.innerWidth;
-        const scale = this.getResponsiveScale(containerWidth);
-
-        // Responsive width and font size - much smaller for better proportions
-        let width = 160;
-        let titleFont = 15;
-        let bodyFont = 12;
-        let padding = 8;
-
-        if (containerWidth <= 680) {
-          // Extra small screens - very compact
-          width = Math.max(100, containerWidth * 0.25);
-          titleFont = Math.round(12 * scale);
-          bodyFont = Math.round(10 * scale);
-          padding = 6;
-        } else if (containerWidth <= 930) {
-          // Medium screens - compact
-          width = Math.max(120, containerWidth * 0.18);
-          titleFont = Math.round(13 * scale);
-          bodyFont = Math.round(11 * scale);
-          padding = 7;
-        } else {
-          // Large screens - wider to accommodate longer titles
-          width = Math.min(200, containerWidth * 0.18);
-          titleFont = Math.round(15 * scale);
-          bodyFont = Math.round(12 * scale);
-          padding = 8;
+        // Skip tooltips for contributor nodes (AIT, Team Backlog, SPK, Jira Board)
+        if (data.category === 'member') {
+          return '';
         }
 
+        // Fixed consistent sizing for all screen sizes - no responsive scaling
+        const width = 220;
+        const titleFont = 15;
+        const bodyFont = 12;
+        const padding = 8;
+
+        // Helper function to wrap text if needed
+        const wrapText = (text: string, maxLength: number): string => {
+          if (text.length <= maxLength) return text;
+
+          // Find a good break point
+          const words = text.split(' ');
+          if (words.length === 1) return text; // Single word, don't break
+
+          const midPoint = Math.floor(words.length / 2);
+          const firstHalf = words.slice(0, midPoint).join(' ');
+          const secondHalf = words.slice(midPoint).join(' ');
+
+          return `${firstHalf}<br/>${secondHalf}`;
+        };
+
         if (data.category === 'portfolio') {
+          // Handle array structure - use first portfolio for tooltip
+          const firstPortfolio = Array.isArray(teamStructureData)
+            ? teamStructureData[0]
+            : teamStructureData;
+          const portfolioName = firstPortfolio?.portfolioName ?? '';
+          const wrappedName = wrapText(portfolioName, 25);
+
           content = `
-            <div style="background: #E0E0E0; color: #000; padding: ${padding}px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
-              ${teamStructureData?.portfolioName ?? ''}
+            <div style="background: #E0E0E0; color: #000; padding: ${padding}px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px; line-height: 1.3;">
+              ${wrappedName}
             </div>
             <div style="background: #fff; padding: ${padding}px; font-size: ${bodyFont}px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
               Portfolio ID<br><span style='color:#888;'>${
-                teamStructureData?.portfolioId ?? ''
+                firstPortfolio?.portfolioId ?? ''
               }</span><br>
               Manager<br><span style='color:#888;'>${
-                teamStructureData?.portfolioTechMgr ?? ''
+                firstPortfolio?.portfolioTechMgr ?? ''
               }</span>
             </div>
           `;
         } else if (data.category === 'pdt') {
-          const pdtData = teamStructureData?.children?.[0] ?? {};
+          // Handle array structure - use first portfolio for tooltip
+          const firstPortfolio = Array.isArray(teamStructureData)
+            ? teamStructureData[0]
+            : teamStructureData;
+          const pdtData = firstPortfolio?.children?.[0] ?? {};
+          const pdtName = pdtData?.pdtname ?? '';
+          const wrappedName = wrapText(pdtName, 25);
+
           content = `
-            <div style="background: #C62828; color: #fff; padding: ${padding}px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
-              ${pdtData?.pdtname ?? ''}
+            <div style="background: #C62828; color: #fff; padding: ${padding}px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px; line-height: 1.3;">
+              ${wrappedName}
             </div>
             <div style="background: #fff; padding: ${padding}px; font-size: ${bodyFont}px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
               PDT ID<br><span style='color:#888;'>${
@@ -251,11 +278,17 @@ export class TeamStructureConfigService {
             </div>
           `;
         } else if (data.category === 'team') {
-          const teamData =
-            teamStructureData?.children?.[0]?.children?.[0] ?? {};
+          // Handle array structure - use first portfolio for tooltip
+          const firstPortfolio = Array.isArray(teamStructureData)
+            ? teamStructureData[0]
+            : teamStructureData;
+          const teamData = firstPortfolio?.children?.[0]?.children?.[0] ?? {};
+          const teamName = teamData?.teamName ?? '';
+          const wrappedName = wrapText(teamName, 25);
+
           content = `
-            <div style="background: #012169; color: #fff; padding: ${padding}px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px;">
-              ${teamData?.teamName ?? ''}
+            <div style="background: #012169; color: #fff; padding: ${padding}px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px; line-height: 1.3;">
+              ${wrappedName}
             </div>
             <div style="background: #fff; padding: ${padding}px; font-size: ${bodyFont}px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
               Team ID<br><span style='color:#888;'>${
@@ -277,7 +310,7 @@ export class TeamStructureConfigService {
           `;
         }
 
-        return `<div style="background: transparent; border-radius: 10px; width: ${width}px; overflow: hidden; box-shadow: none; max-width: 100%;">${content}</div>`;
+        return `<div style="background: transparent; border-radius: 10px; width: ${width}px; overflow: visible; box-shadow: none; max-width: 100%;">${content}</div>`;
       },
     };
   }
@@ -302,9 +335,13 @@ export class TeamStructureConfigService {
     portfolioX: number,
     pdtX: number,
     teamsX: number,
+    portfolioY: number,
+    pdtY: number,
+    teamsY: number,
     size: number,
     mainFont: number,
     formatNodeLabel: Function,
+    getNodeLabel: Function,
     portfolioName: string,
     trainName: string,
     teamName: string
@@ -314,40 +351,46 @@ export class TeamStructureConfigService {
         name: 'Portfolio',
         category: 'portfolio',
         x: portfolioX,
-        y: 150,
+        y: portfolioY,
         symbolSize: size,
         itemStyle: { color: this.COLORS.PORTFOLIO },
-        label: formatNodeLabel(portfolioName, 'Portfolio', mainFont, true),
+        label:
+          getNodeLabel('Portfolio') ||
+          formatNodeLabel(portfolioName, 'Portfolio', mainFont, true),
       },
       {
         name: 'PDT',
         category: 'pdt',
         x: pdtX,
-        y: 150,
+        y: pdtY,
         symbolSize: size,
         itemStyle: { color: this.COLORS.PDT },
-        label: formatNodeLabel(trainName, 'PDT', mainFont, false),
+        label:
+          getNodeLabel('PDT') ||
+          formatNodeLabel(trainName, 'PDT', mainFont, false),
       },
       {
         name: 'Team',
         category: 'team',
         x: teamsX,
-        y: 150,
+        y: teamsY,
         symbolSize: size,
         itemStyle: { color: this.COLORS.TEAM },
-        label: formatNodeLabel(teamName, 'Team', mainFont, false),
+        label:
+          getNodeLabel('Team') ||
+          formatNodeLabel(teamName, 'Team', mainFont, false),
       },
     ];
   }
 
   // Create junction node configurations
-  private createJunctionNodes(teamsX: number): NodeData[] {
+  private createJunctionNodes(teamsX: number, junctionY: number): NodeData[] {
     return [
       {
         name: 'vertical-junction',
         category: 'junction',
         x: teamsX,
-        y: 280,
+        y: junctionY,
         symbolSize: 0,
         itemStyle: { color: 'rgba(0,0,0,0)' },
         label: { show: false },
@@ -359,6 +402,7 @@ export class TeamStructureConfigService {
   private createContributorNodes(
     startX: number,
     spacing: number,
+    contributorNodesY: number,
     size: number,
     memberFont: number,
     memberBoldFont: number,
@@ -368,8 +412,8 @@ export class TeamStructureConfigService {
       name,
       category: 'member',
       x: startX + index * spacing,
-      y: 440,
-      symbolSize: size,
+      y: contributorNodesY,
+      symbolSize: size * 1.0,
       symbol: 'circle',
       itemStyle: {
         color: this.COLORS.CONTRIBUTOR.bg,
@@ -387,12 +431,16 @@ export class TeamStructureConfigService {
   }
 
   // Create connector node configurations
-  private createConnectorNodes(startX: number, spacing: number): NodeData[] {
+  private createConnectorNodes(
+    startX: number,
+    spacing: number,
+    connectorNodesY: number
+  ): NodeData[] {
     return [1, 2, 3, 4].map((i) => ({
       name: `v${i}`,
       category: 'junction',
       x: startX + (i - 1) * spacing,
-      y: 280,
+      y: connectorNodesY,
       symbolSize: 0,
       itemStyle: { color: 'rgba(0,0,0,0)' },
       label: { show: false },
@@ -453,38 +501,646 @@ export class TeamStructureConfigService {
 
   // Get responsive scale based on container width
   getResponsiveScale(containerWidth: number): number {
-    if (containerWidth > 930) return 1;
-    return 0.75;
+    if (containerWidth <= 750) return 0.75;
+    return 1;
   }
 
   // Calculate zoom level based on scale
   getZoomLevel(scale: number): number {
-    if (scale === 1) return 0.75;
+    if (scale === 1) return 0.8;
     if (scale === 0.8) return 0.7;
-    return 0.7; // For scale = 0.7
+    return 0.65;
   }
 
-  // Calculate font sizes based on scale
-  getChartFonts(scale: number): ChartFonts {
-    // Check window width for extra small screens
-    const width = window.innerWidth;
-    if (width <= 680) {
+  // Calculate font sizes based on scale and containerWidth
+  getChartFonts(scale: number, containerWidth: number): ChartFonts {
+    const verticalLayoutBreakpoint = 600;
+    const isVerticalLayout = containerWidth <= verticalLayoutBreakpoint;
+    const isSmallHorizontal =
+      containerWidth > verticalLayoutBreakpoint && containerWidth <= 750;
+
+    if (isVerticalLayout) {
       return {
-        mainNodeSize: 155 * scale, // much smaller
+        // Sizes for Vertical Layout (main nodes larger)
+        mainNodeSize: 220 * scale,
+        teamNodeSize: 100 * scale,
+        mainFont: 20 * scale,
+        mainTitleFont: 15 * scale,
+        memberFont: 13 * scale,
+        memberBoldFont: 15 * scale,
+      };
+    } else if (isSmallHorizontal) {
+      // Sizes for Small Horizontal Layout (600px < width <= 750px) - bigger text to compensate for 0.75 scale
+      return {
+        mainNodeSize: 200 * scale,
+        teamNodeSize: 85 * scale,
+        mainFont: 22 * scale, // Increased from 18 to 22
+        mainTitleFont: 17 * scale, // Increased from 14 to 17
+        memberFont: 15 * scale, // Increased from 12 to 15
+        memberBoldFont: 16 * scale, // Increased from 13 to 16
+      };
+    } else {
+      // Sizes for Large Horizontal Layout (width > 750px)
+      return {
+        mainNodeSize: 200 * scale, // Consistent size for horizontal main nodes
         teamNodeSize: 85 * scale,
         mainFont: 18 * scale,
-        mainTitleFont: 12 * scale,
+        mainTitleFont: 14 * scale,
         memberFont: 12 * scale,
         memberBoldFont: 13 * scale,
       };
     }
+  }
+
+  // Calculate node positions for given container dimensions
+  calculateNodePositions(
+    containerWidth: number,
+    centerX: number,
+    scale: number,
+    mainNodeSize: number
+  ) {
+    const verticalLayoutBreakpoint = 600;
+    const isVerticalLayout = containerWidth <= verticalLayoutBreakpoint;
+
+    let portfolioX: number, pdtX: number, teamsX: number;
+    let portfolioY: number, pdtY: number, teamsY: number;
+    let junctionY: number, horizontalConnectorsY: number, contributorsY: number;
+    let bottomRowSpacing: number,
+      bottomRowWidth: number,
+      bottomRowStartX: number;
+
+    // Effective mainNodeSize is already scaled and passed in.
+    // For internal calculations, like Y positions relative to node centers.
+    const currentMainNodeRadius = mainNodeSize / 2;
+    const fonts = this.getChartFonts(scale, containerWidth); // Get current fonts for teamNodeSize etc.
+    const currentTeamNodeRadius = fonts.teamNodeSize / 2;
+
+    if (isVerticalLayout) {
+      portfolioX = centerX;
+      pdtX = centerX;
+      teamsX = centerX;
+
+      // Y positions for vertical stacking (centers of nodes)
+      // Using mainNodeSize which is larger in vertical layout
+      const verticalSpacing = 30 * scale; // Space between stacked main nodes
+      portfolioY = 60 * scale + currentMainNodeRadius; // Increased from 40 to 60 for more top spacing
+      pdtY =
+        portfolioY +
+        currentMainNodeRadius +
+        verticalSpacing +
+        currentMainNodeRadius;
+      teamsY =
+        pdtY + currentMainNodeRadius + verticalSpacing + currentMainNodeRadius;
+
+      junctionY = teamsY + currentMainNodeRadius + 40 * scale;
+      horizontalConnectorsY = junctionY;
+      contributorsY = junctionY + 35 * scale + currentTeamNodeRadius;
+
+      bottomRowSpacing = Math.min(containerWidth / 3, 140 * scale); // Increased from 3.5 to 3 and from 100 to 120 for more spacing
+      bottomRowWidth = 3 * bottomRowSpacing;
+      bottomRowStartX = centerX - bottomRowWidth / 2;
+    } else {
+      // Horizontal Layout
+      // MAXIMUM spacing by placing nodes at absolute edges
+      // Portfolio at the very left edge, Team at the very right edge
+      portfolioX = currentMainNodeRadius; // Absolute left edge
+      teamsX = containerWidth - currentMainNodeRadius; // Absolute right edge
+      pdtX = centerX; // Perfect center
+
+      // Safety check for very narrow screens (shouldn't happen with 600px breakpoint)
+      const minSpacing = 10 * scale; // Reduced minimum for maximum spread
+
+      // Only adjust if there's actual overlap (very unlikely with proper breakpoint)
+      if (
+        pdtX - portfolioX <
+        currentMainNodeRadius + minSpacing + currentMainNodeRadius
+      ) {
+        portfolioX =
+          pdtX - currentMainNodeRadius - minSpacing - currentMainNodeRadius;
+      }
+
+      if (
+        teamsX - pdtX <
+        currentMainNodeRadius + minSpacing + currentMainNodeRadius
+      ) {
+        teamsX =
+          pdtX + currentMainNodeRadius + minSpacing + currentMainNodeRadius;
+      }
+
+      // Common Y for main nodes in horizontal layout
+      const mainNodesBaseY = 80 * scale;
+      portfolioY = mainNodesBaseY + currentMainNodeRadius;
+      pdtY = mainNodesBaseY + currentMainNodeRadius;
+      teamsY = mainNodesBaseY + currentMainNodeRadius;
+
+      // Cascade Y positions downwards from main nodes
+      junctionY = teamsY + currentMainNodeRadius + 100 * scale;
+      horizontalConnectorsY = junctionY;
+      contributorsY = junctionY + 60 * scale + currentTeamNodeRadius;
+
+      // Contributor X positioning, centered under the 'Team' node
+      bottomRowSpacing = Math.min(containerWidth / 4, 125 * scale);
+      bottomRowWidth = 3 * bottomRowSpacing;
+      bottomRowStartX = teamsX - bottomRowWidth / 2; // Center under Team node
+    }
+
     return {
-      mainNodeSize: 210 * scale,
-      teamNodeSize: 85 * scale,
-      mainFont: 19 * 1.2 * scale,
-      mainTitleFont: 15 * 1.2 * scale,
-      memberFont: 12 * scale,
-      memberBoldFont: 13 * scale,
+      portfolioX,
+      pdtX,
+      teamsX,
+      portfolioY,
+      pdtY,
+      teamsY,
+      junctionY,
+      horizontalConnectorsY,
+      contributorsY,
+      bottomRowStartX,
+      bottomRowSpacing,
+      isVerticalLayout,
+    };
+  }
+
+  // Update node positions for existing nodes (used during resize)
+  updateNodePositions(
+    nodes: any[],
+    containerWidth: number,
+    centerX: number,
+    scale: number,
+    fonts: any
+  ): void {
+    const positions = this.calculateNodePositions(
+      containerWidth,
+      centerX,
+      scale,
+      fonts.mainNodeSize
+    );
+
+    for (const node of nodes) {
+      this.positionNode(node, positions, scale, fonts);
+    }
+  }
+
+  // Position a specific node based on its type (used by updateNodePositions)
+  private positionNode(
+    node: any,
+    positions: any,
+    scale: number,
+    fonts: any
+  ): void {
+    switch (node.name) {
+      case 'Portfolio':
+        this.positionMainNode(
+          node,
+          positions.portfolioX,
+          positions.portfolioY,
+          scale,
+          fonts
+        );
+        break;
+      case 'PDT':
+        this.positionMainNode(
+          node,
+          positions.pdtX,
+          positions.pdtY,
+          scale,
+          fonts
+        );
+        break;
+      case 'Team':
+        this.positionMainNode(
+          node,
+          positions.teamsX,
+          positions.teamsY,
+          scale,
+          fonts
+        );
+        break;
+      case 'vertical-junction':
+      case 'horizontal-line':
+        node.x = positions.teamsX;
+        node.y = positions.junctionY;
+        break;
+      case 'AIT':
+      case 'SPK':
+      case 'Team Backlog':
+      case 'Jira Board':
+        this.positionContributorNode(
+          node,
+          positions.bottomRowStartX,
+          positions.bottomRowSpacing,
+          positions.contributorsY,
+          scale,
+          fonts
+        );
+        break;
+      case 'v1':
+      case 'v2':
+      case 'v3':
+      case 'v4':
+        const vIndex = parseInt(node.name.replace('v', '')) - 1;
+        node.x =
+          positions.bottomRowStartX + vIndex * positions.bottomRowSpacing;
+        node.y = positions.horizontalConnectorsY;
+        break;
+    }
+  }
+
+  // Position a main node (Portfolio, PDT, Team)
+  private positionMainNode(
+    node: any,
+    nodeX: number,
+    nodeY: number,
+    scale: number,
+    fonts: any
+  ): void {
+    node.x = nodeX;
+    node.y = nodeY;
+    node.symbolSize = fonts.mainNodeSize;
+    if (node.label?.rich) {
+      node.label.rich.name.fontSize = fonts.mainFont;
+      node.label.rich.title.fontSize = fonts.mainTitleFont;
+    }
+  }
+
+  // Position a contributor node
+  private positionContributorNode(
+    node: any,
+    startX: number,
+    spacing: number,
+    nodeY: number,
+    scale: number,
+    fonts: any
+  ): void {
+    const index = this.NODE_TYPES.CONTRIBUTOR.indexOf(node.name);
+    node.x = startX + index * spacing;
+    node.y = nodeY;
+    node.symbolSize = fonts.teamNodeSize * 1.0;
+  }
+
+  // -------------- TEXT FORMATTING UTILITIES --------------
+
+  /**
+   * Format long text by adding line breaks intelligently
+   */
+  formatLongText(text: string, maxLength: number): string {
+    if (text.length <= maxLength || text.includes('\n')) {
+      return text;
+    }
+
+    // For very long text, try to break into multiple lines
+    if (text.length > maxLength * 2) {
+      return this.formatVeryLongText(text, maxLength);
+    }
+
+    // Find the best break point near the middle
+    const halfIndex = Math.floor(text.length / 2);
+    let breakIndex = text.lastIndexOf(' ', halfIndex + 5); // Allow some flexibility
+
+    // If no space found near middle, look for other break points
+    if (breakIndex === -1 || breakIndex < 3) {
+      breakIndex = text.indexOf(' ', halfIndex - 5);
+    }
+
+    // If still no good break point, look for other characters
+    if (breakIndex === -1) {
+      const breakChars = ['-', '&', '/', '|'];
+      for (const char of breakChars) {
+        breakIndex = text.lastIndexOf(char, halfIndex + 3);
+        if (breakIndex > 3) {
+          breakIndex++; // Break after the character
+          break;
+        }
+      }
+    }
+
+    // Last resort: break at a reasonable position
+    if (breakIndex === -1) {
+      breakIndex = Math.min(halfIndex, maxLength);
+    }
+
+    return (
+      text.substring(0, breakIndex).trim() +
+      '\n' +
+      text.substring(breakIndex).trim()
+    );
+  }
+
+  /**
+   * Format very long text into multiple lines
+   */
+  private formatVeryLongText(text: string, maxLength: number): string {
+    const words = text.split(' ');
+    const lines: string[] = [];
+    let currentLine = '';
+
+    for (const word of words) {
+      if (currentLine.length + word.length + 1 <= maxLength) {
+        currentLine += (currentLine ? ' ' : '') + word;
+      } else {
+        if (currentLine) {
+          lines.push(currentLine);
+          currentLine = word;
+        } else {
+          // Single word longer than maxLength
+          if (word.length > maxLength) {
+            lines.push(word.substring(0, maxLength - 1) + '-');
+            currentLine = word.substring(maxLength - 1);
+          } else {
+            currentLine = word;
+          }
+        }
+      }
+    }
+
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+
+    // Limit to 3 lines maximum for readability
+    if (lines.length > 3) {
+      lines[2] = lines[2] + '...';
+      return lines.slice(0, 3).join('\n');
+    }
+
+    return lines.join('\n');
+  }
+
+  /**
+   * Calculate font size based on text length
+   */
+  calculateFontSize(text: string, baseSize: number): number {
+    if (text.length > 15) {
+      return baseSize * 0.85;
+    }
+    if (text.length > 10) {
+      return baseSize * 0.9;
+    }
+    return baseSize;
+  }
+
+  // -------------- NODE LABEL CREATION --------------
+
+  /**
+   * Create label for main nodes (Portfolio, PDT, Team)
+   */
+  createMainNodeLabel(
+    name: string,
+    title: string,
+    fonts: ChartFonts,
+    portfolioCount?: number
+  ): any {
+    // Apply text wrapping to the name
+    const wrappedName = this.formatLongText(name, 15);
+
+    // Determine text color based on node type
+    // Portfolio has light background (#E0E0E0) so use black text
+    // PDT has dark background (#C62828) so use white text
+    // Team has dark background (#012169) so use white text
+    const textColor = title === 'Portfolio' ? '#000000' : '#FFFFFF';
+
+    // For Portfolio node, show count if there are multiple portfolios
+    if (title === 'Portfolio' && portfolioCount && portfolioCount > 1) {
+      return {
+        formatter: `{name|${wrappedName}}\n{title|${title}}\n{count|${portfolioCount}}`,
+        rich: {
+          name: {
+            fontSize: fonts.mainFont,
+            fontWeight: 'normal',
+            lineHeight: 22,
+            color: textColor,
+            fontFamily: 'Connections, Arial, sans-serif',
+            padding: [0, 0, 0, 0],
+            align: 'center',
+            verticalAlign: 'middle',
+          },
+          title: {
+            fontSize: fonts.mainTitleFont,
+            fontWeight: 'normal',
+            lineHeight: 18,
+            color: textColor,
+            fontFamily: 'Connections, Arial, sans-serif',
+            align: 'center',
+            verticalAlign: 'middle',
+          },
+          count: {
+            fontSize: fonts.mainTitleFont,
+            fontWeight: 'bold',
+            lineHeight: 18,
+            color: textColor,
+            fontFamily: 'Connections, Arial, sans-serif',
+            align: 'center',
+            verticalAlign: 'middle',
+          },
+        },
+      };
+    }
+
+    return {
+      formatter: `{name|${wrappedName}}\n{title|${title}}`,
+      rich: {
+        name: {
+          fontSize: fonts.mainFont,
+          fontWeight: 'normal',
+          lineHeight: 22,
+          color: textColor,
+          fontFamily: 'Connections, Arial, sans-serif',
+          padding: [0, 0, 0, 0],
+          align: 'center',
+          verticalAlign: 'middle',
+        },
+        title: {
+          fontSize: fonts.mainTitleFont,
+          fontWeight: 'normal',
+          lineHeight: 18,
+          color: textColor,
+          fontFamily: 'Connections, Arial, sans-serif',
+          align: 'center',
+          verticalAlign: 'middle',
+        },
+      },
+    };
+  }
+
+  /**
+   * Create label for contributor nodes (AIT, Team Backlog, etc.)
+   */
+  createContributorNodeLabel(
+    nodeName: string,
+    fonts: ChartFonts,
+    nodeDataCounts: Record<string, number>
+  ): any {
+    const count = nodeDataCounts[nodeName] || 0;
+    const noData = count === 0;
+
+    // Apply text wrapping to long names
+    let displayName = nodeName;
+    if (nodeName === 'Team Backlog') {
+      displayName = 'Team\nBacklog';
+    } else if (nodeName.length > 10) {
+      displayName = this.formatLongText(nodeName, 10);
+    }
+
+    return {
+      formatter: noData
+        ? `{name|${displayName}}\n{plus|+}`
+        : `{name|${displayName}}\n{count|${count}}`,
+      rich: {
+        name: {
+          fontSize: this.calculateFontSize(nodeName, fonts.memberBoldFont),
+          fontWeight: 'normal',
+          lineHeight: 16,
+          color: '#000000',
+          fontFamily: 'Connections, Arial, sans-serif',
+          align: 'center',
+          verticalAlign: 'middle',
+        },
+        plus: {
+          fontSize: fonts.memberBoldFont,
+          fontWeight: 'bold',
+          color: '#000000',
+          lineHeight: 20,
+          align: 'center',
+        },
+        count: {
+          fontSize: fonts.memberBoldFont,
+          fontWeight: 'bold',
+          color: '#000000',
+          lineHeight: 18,
+          align: 'center',
+        },
+      },
+    };
+  }
+
+  /**
+   * Formats a node label with proper text wrapping and dynamic sizing
+   */
+  formatNodeLabel(
+    name: string,
+    title: string,
+    baseSize: number,
+    isLight: boolean
+  ): any {
+    const nameText = this.formatLongText(name, 12);
+    const fontSize = this.calculateFontSize(name, baseSize);
+
+    return {
+      formatter: `{name|${nameText}}\n{title|${title}}`,
+      rich: {
+        name: {
+          fontSize,
+          fontWeight: 'normal',
+          lineHeight: 26,
+          color: isLight ? '#000000' : '#FFFFFF',
+          fontFamily: 'Connections, Arial, sans-serif',
+          padding: [0, 0, 0, 0],
+        },
+        title: {
+          fontSize: baseSize * 0.65,
+          fontWeight: 'normal',
+          lineHeight: 18,
+          color: isLight ? '#000000' : '#FFFFFF',
+          fontFamily: 'Connections, Arial, sans-serif',
+        },
+      },
+    };
+  }
+
+  // -------------- NODE UTILITIES --------------
+
+  /**
+   * Check if a node is non-interactive
+   */
+  isNonInteractiveNode(nodeName: string): boolean {
+    return [
+      'vertical-junction',
+      'horizontal-line',
+      'v1',
+      'v2',
+      'v3',
+      'v4',
+    ].includes(nodeName);
+  }
+
+  /**
+   * Get zoom level for width with enhanced logic
+   */
+  getZoomForWidth(containerWidth: number, scale: number): number {
+    // Use more conservative zoom levels to prevent cutoff
+    if (containerWidth <= 500) {
+      return 0.6; // Very small screens need more zoom out
+    }
+    if (containerWidth <= 750) {
+      return 0.7; // Small screens
+    }
+    return this.getZoomLevel(scale);
+  }
+
+  /**
+   * Extract nodes from chart options
+   */
+  getNodesFromOption(options: any): any[] | null {
+    if (!options?.series?.[0]?.data || !Array.isArray(options.series[0].data)) {
+      return null;
+    }
+
+    return options.series[0].data;
+  }
+
+  /**
+   * Get node ID based on node type for alignment data
+   */
+  getNodeIdByType(nodeName: string, teamStructureData: any[]): string {
+    if (!teamStructureData || teamStructureData.length === 0) {
+      return '';
+    }
+
+    const firstPortfolio = teamStructureData[0];
+
+    switch (nodeName) {
+      case 'Portfolio':
+        return firstPortfolio.portfolioId?.toString() ?? '';
+      case 'PDT':
+        return firstPortfolio.children?.[0]?.pdtid?.toString() ?? '';
+      case 'Team':
+        return (
+          firstPortfolio.children?.[0]?.children?.[0]?.teamId?.toString() ?? ''
+        );
+      default:
+        return '';
+    }
+  }
+
+  /**
+   * Calculate normal node sizes for different node types
+   */
+  getNormalNodeSizes(
+    mainNodeSize: number,
+    teamNodeSize: number
+  ): Record<string, number> {
+    return {
+      Portfolio: mainNodeSize,
+      PDT: mainNodeSize,
+      Team: mainNodeSize,
+      AIT: teamNodeSize * 1.0,
+      SPK: teamNodeSize * 1.0,
+      'Team Backlog': teamNodeSize * 1.0,
+      'Jira Board': teamNodeSize * 1.0,
+    };
+  }
+
+  /**
+   * Get alignment type mapping for node names
+   */
+  getNodeToAlignmentTypeMap(): { [key: string]: AlignmentType | 'PORTFOLIO' } {
+    return {
+      Portfolio: 'PORTFOLIO', // Special case - uses getPortfolioAlignments
+      PDT: 'TEAMTOTRAIN',
+      Team: 'TEAMTOPDT',
+      AIT: 'TEAMTOAIT',
+      'Team Backlog': 'TEAMTOTPK',
+      SPK: 'TEAMTOSPK',
+      'Jira Board': 'TEAMTOJIRABOARD',
     };
   }
 }

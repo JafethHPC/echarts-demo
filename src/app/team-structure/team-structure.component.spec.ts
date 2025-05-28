@@ -1,10 +1,14 @@
-import { ChangeDetectorRef, ElementRef, NgZone } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+﻿import { ChangeDetectorRef, ElementRef, NgZone } from '@angular/core';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
 import { TeamStructureComponent } from './team-structure.component';
 import { TeamStructureService } from './team-structure.service';
 import { TeamStructureConfigService } from './team-structure-config.service';
 import { AlignmentService, Alignment } from './alignment.service';
-import * as echarts from 'echarts';
 import {
   ChartFonts,
   NodeData,
@@ -17,34 +21,39 @@ import {
   SelectionEvent,
 } from '@progress/kendo-angular-grid';
 
-// Mock data
-const mockTeamStructureData: TeamStructureData = {
-  portfolioId: '1',
-  portfolioName: 'Test Portfolio',
-  children: [
-    {
-      pdtid: '2',
-      pdtname: 'Test PDT',
-      children: [
-        {
-          teamId: '3',
-          teamName: 'Test Team',
-          children: [
-            { name: 'AIT', count: 5 },
-            { name: 'Team Backlog', count: 10 },
-            { name: 'SPK', count: 3 },
-            { name: 'Jira Board', count: 7 },
-          ],
-        },
-      ],
-    },
-  ],
-};
+// ============================================================================
+// MOCK DATA
+// ============================================================================
+
+const mockTeamStructureData: TeamStructureData[] = [
+  {
+    portfolioId: '1',
+    portfolioName: 'Test Portfolio',
+    children: [
+      {
+        pdtid: '2',
+        pdtname: 'Test PDT',
+        children: [
+          {
+            teamId: '3',
+            teamName: 'Test Team',
+            children: [
+              { name: 'AIT', count: 5 },
+              { name: 'Team Backlog', count: 10 },
+              { name: 'SPK', count: 3 },
+              { name: 'Jira Board', count: 7 },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+];
 
 const mockAlignments: Alignment[] = [
   {
     alignToId: '1',
-    alignToName: 'Alignment 1',
+    alignToName: 'Test Alignment 1',
     jiraInstance: 'JIRA-1',
     techManagerName: 'Manager 1',
     alignFromId: '100',
@@ -60,7 +69,7 @@ const mockAlignments: Alignment[] = [
   },
   {
     alignToId: '2',
-    alignToName: 'Alignment 2',
+    alignToName: 'Test Alignment 2',
     jiraInstance: 'JIRA-2',
     techManagerName: 'Manager 2',
     alignFromId: '200',
@@ -85,1277 +94,988 @@ const mockChartFonts: ChartFonts = {
   memberBoldFont: 14,
 };
 
-// Mock services
+// ============================================================================
+// MOCK SERVICES
+// ============================================================================
+
 class MockTeamStructureService {
-  getTeamStructureData() {
+  getTeamStructureData(): TeamStructureData[] {
     return mockTeamStructureData;
   }
 }
 
 class MockTeamStructureConfigService {
   NODE_TYPES = {
-    MAIN: ['Portfolio', 'PDT'],
+    MAIN: ['Portfolio', 'PDT', 'Team'],
     CONTRIBUTOR: ['AIT', 'Team Backlog', 'SPK', 'Jira Board'],
     JUNCTION: ['vertical-junction', 'horizontal-line'],
     CONNECTOR: ['v1', 'v2', 'v3', 'v4'],
   };
 
-  getResponsiveScale(width: number) {
-    return width > 1000 ? 1 : 0.8;
+  getResponsiveScale(width: number): number {
+    if (width > 1200) return 1.2;
+    if (width > 800) return 1;
+    return 0.8;
   }
 
-  getChartFonts(scale: number) {
+  getChartFonts(scale: number, width: number): ChartFonts {
+    return mockChartFonts;
+  }
+
+  getChartOptions(): any {
+    return { series: [{ data: [] }] };
+  }
+
+  updateNodePositions(): void {}
+
+  getNormalNodeSizes(): Record<string, number> {
     return {
-      mainNodeSize: 70 * scale,
-      teamNodeSize: 50 * scale,
-      mainFont: 16 * scale,
-      mainTitleFont: 12 * scale,
-      memberFont: 14 * scale,
-      memberBoldFont: 14 * scale,
+      Portfolio: 70,
+      PDT: 70,
+      Team: 70,
+      AIT: 50,
+      'Team Backlog': 50,
+      SPK: 50,
+      'Jira Board': 50,
     };
   }
 
-  getZoomLevel(scale: number) {
-    return scale > 0.9 ? 1 : 0.9;
+  getNodesFromOption(): NodeData[] | null {
+    return [];
   }
 
-  getChartOptions(
-    containerWidth: number,
-    centerX: number,
-    scale: number,
-    mainNodeSize: number,
-    teamNodeSize: number,
-    mainFont: number,
-    mainTitleFont: number,
-    memberFont: number,
-    memberBoldFont: number,
-    formatNodeLabel: any,
-    getNodeLabel: any,
-    portfolioName: string,
-    pdtName: string,
-    teamName: string,
-    teamStructureData: any
-  ) {
+  isNonInteractiveNode(nodeName: string): boolean {
+    return (
+      this.NODE_TYPES.JUNCTION.includes(nodeName) ||
+      this.NODE_TYPES.CONNECTOR.includes(nodeName)
+    );
+  }
+
+  getNodeIdByType(nodeName: string): string {
+    switch (nodeName) {
+      case 'Portfolio':
+        return '1';
+      case 'PDT':
+        return '2';
+      case 'Team':
+        return '3';
+      default:
+        return '1';
+    }
+  }
+
+  getNodeToAlignmentTypeMap(): Record<string, string> {
     return {
-      grid: { left: 0, right: 0, top: 0, bottom: 0, containLabel: true },
-      tooltip: { show: true },
-      series: [
-        {
-          type: 'graph',
-          layout: 'none',
-          roam: true,
-          zoom: 1,
-          center: ['50%', '50%'],
-          scaleLimit: { min: 0.6, max: 1.5 },
-          label: { show: true },
-          edgeLabel: { show: false },
-          data: [
-            {
-              name: 'Portfolio',
-              category: 'main',
-              x: 100,
-              y: 100,
-              symbolSize: mainNodeSize,
-            },
-            {
-              name: 'PDT',
-              category: 'main',
-              x: 200,
-              y: 100,
-              symbolSize: mainNodeSize,
-            },
-            {
-              name: 'Team',
-              category: 'main',
-              x: 300,
-              y: 100,
-              symbolSize: mainNodeSize,
-            },
-            {
-              name: 'AIT',
-              category: 'contributor',
-              x: 250,
-              y: 200,
-              symbolSize: teamNodeSize,
-            },
-            {
-              name: 'Team Backlog',
-              category: 'contributor',
-              x: 300,
-              y: 200,
-              symbolSize: teamNodeSize,
-            },
-            {
-              name: 'SPK',
-              category: 'contributor',
-              x: 350,
-              y: 200,
-              symbolSize: teamNodeSize,
-            },
-            {
-              name: 'Jira Board',
-              category: 'contributor',
-              x: 400,
-              y: 200,
-              symbolSize: teamNodeSize,
-            },
-            {
-              name: 'vertical-junction',
-              category: 'junction',
-              x: 300,
-              y: 150,
-              symbolSize: 1,
-            },
-            {
-              name: 'horizontal-line',
-              category: 'junction',
-              x: 325,
-              y: 200,
-              symbolSize: 1,
-            },
-          ],
-          links: [
-            { source: 'Portfolio', target: 'PDT' },
-            { source: 'PDT', target: 'Team' },
-            { source: 'Team', target: 'vertical-junction' },
-            { source: 'vertical-junction', target: 'horizontal-line' },
-            { source: 'horizontal-line', target: 'AIT' },
-            { source: 'horizontal-line', target: 'Team Backlog' },
-            { source: 'horizontal-line', target: 'SPK' },
-            { source: 'horizontal-line', target: 'Jira Board' },
-          ],
-          categories: [
-            {
-              name: 'main',
-              itemStyle: { color: '#FFD700' },
-              label: { fontSize: mainFont, fontWeight: 'bold' },
-            },
-            {
-              name: 'contributor',
-              itemStyle: { color: '#87CEEB' },
-              label: { fontSize: memberFont },
-            },
-            {
-              name: 'junction',
-              itemStyle: { color: 'transparent' },
-              label: { show: false },
-            },
-          ],
-        },
-      ],
+      Portfolio: 'PORTFOLIO',
+      PDT: 'PDT',
+      Team: 'TEAM',
     };
+  }
+
+  createMainNodeLabel(): any {
+    return { show: true };
+  }
+
+  createContributorNodeLabel(): any {
+    return { show: true };
+  }
+
+  formatNodeLabel(): any {
+    return { show: true };
   }
 }
 
 class MockAlignmentService {
-  getAlignments(nodeName: string, teamStructureData: any) {
+  getAlignment(): Alignment[] {
     return mockAlignments;
   }
-}
 
-class MockNgZone implements NgZone {
-  hasPendingMacrotasks = false;
-  hasPendingMicrotasks = false;
-  isStable = true;
-  onMicrotaskEmpty = { subscribe: () => ({ unsubscribe: () => {} }) } as any;
-  onStable = { subscribe: () => ({ unsubscribe: () => {} }) } as any;
-  onError = { subscribe: () => ({ unsubscribe: () => {} }) } as any;
-  onUnstable = { subscribe: () => ({ unsubscribe: () => {} }) } as any;
-
-  run<T>(fn: (...args: any[]) => T): T {
-    return fn();
-  }
-
-  runGuarded<T>(fn: (...args: any[]) => T): T {
-    return fn();
-  }
-
-  runOutsideAngular<T>(fn: (...args: any[]) => T): T {
-    return fn();
-  }
-
-  runTask<T>(fn: (...args: any[]) => T): T {
-    return fn();
+  getPortfolioAlignments(): Alignment[] {
+    return mockAlignments.filter((a) => a.alignmentType === 'Portfolio');
   }
 }
 
-class MockChangeDetectorRef implements ChangeDetectorRef {
-  markForCheck() {}
-  detectChanges() {}
-  detach() {}
-  reattach() {}
-  checkNoChanges() {}
+// ============================================================================
+// MOCK ANGULAR SERVICES
+// ============================================================================
+
+class MockChangeDetectorRef implements Partial<ChangeDetectorRef> {
+  markForCheck(): void {}
+  detectChanges(): void {}
+  detach(): void {}
+  reattach(): void {}
+  checkNoChanges(): void {}
 }
 
-// Mock echarts
-jest.mock('echarts', () => {
-  const mockChart = {
-    resize: jest.fn(),
-    getOption: jest.fn().mockReturnValue({
-      series: [
-        {
-          data: [
-            {
-              name: 'Portfolio',
-              category: 'main',
-              x: 100,
-              y: 100,
-              symbolSize: 70,
-            },
-            { name: 'PDT', category: 'main', x: 200, y: 100, symbolSize: 70 },
-            { name: 'Team', category: 'main', x: 300, y: 100, symbolSize: 70 },
-            {
-              name: 'AIT',
-              category: 'contributor',
-              x: 250,
-              y: 200,
-              symbolSize: 50,
-            },
-            {
-              name: 'Team Backlog',
-              category: 'contributor',
-              x: 300,
-              y: 200,
-              symbolSize: 50,
-            },
-            {
-              name: 'SPK',
-              category: 'contributor',
-              x: 350,
-              y: 200,
-              symbolSize: 50,
-            },
-            {
-              name: 'Jira Board',
-              category: 'contributor',
-              x: 400,
-              y: 200,
-              symbolSize: 50,
-            },
-          ],
-        },
-      ],
+class MockElementRef implements Partial<ElementRef> {
+  nativeElement = {
+    querySelector: jest.fn().mockReturnValue({
+      style: { height: '', minHeight: '', setProperty: jest.fn() },
+      classList: {
+        remove: jest.fn(),
+        add: jest.fn(),
+      },
+      offsetWidth: 800,
     }),
-    setOption: jest.fn(),
-    dispose: jest.fn(),
-    on: jest.fn((event, callback) => {
-      // Store the click callback for testing
-      if (event === 'click') {
-        mockChart.clickCallback = callback;
-      }
-    }),
-    clickCallback: null as any,
   };
+}
 
-  return {
-    init: jest.fn().mockReturnValue(mockChart),
-  };
-});
+// ============================================================================
+// TEST SUITE
+// ============================================================================
 
 describe('TeamStructureComponent', () => {
   let component: TeamStructureComponent;
-  let teamStructureService: MockTeamStructureService;
-  let configService: MockTeamStructureConfigService;
-  let alignmentService: MockAlignmentService;
-  let changeDetectorRef: MockChangeDetectorRef;
-  let elementRef: ElementRef;
-  let mockEchartsInstance: any;
+  let fixture: ComponentFixture<TeamStructureComponent>;
+  let mockTeamStructureService: MockTeamStructureService;
+  let mockConfigService: MockTeamStructureConfigService;
+  let mockAlignmentService: MockAlignmentService;
 
-  beforeEach(() => {
-    jest.useFakeTimers();
-    jest.clearAllMocks();
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [TeamStructureComponent],
+      providers: [
+        { provide: TeamStructureService, useClass: MockTeamStructureService },
+        {
+          provide: TeamStructureConfigService,
+          useClass: MockTeamStructureConfigService,
+        },
+        { provide: AlignmentService, useClass: MockAlignmentService },
+        { provide: ChangeDetectorRef, useClass: MockChangeDetectorRef },
+        { provide: ElementRef, useClass: MockElementRef },
+      ],
+    }).compileComponents();
 
-    // Set up DOM
-    const mockElement = document.createElement('div');
-    mockElement.style.width = '1000px';
-    mockElement.style.height = '500px';
-    elementRef = { nativeElement: mockElement } as ElementRef;
+    fixture = TestBed.createComponent(TeamStructureComponent);
+    component = fixture.componentInstance;
 
-    // Mock services
-    teamStructureService = new MockTeamStructureService();
-    configService = new MockTeamStructureConfigService();
-    alignmentService = new MockAlignmentService();
-    changeDetectorRef = new MockChangeDetectorRef();
+    mockTeamStructureService = TestBed.inject(TeamStructureService) as any;
+    mockConfigService = TestBed.inject(TeamStructureConfigService) as any;
+    mockAlignmentService = TestBed.inject(AlignmentService) as any;
 
-    // Set up spies
-    jest.spyOn(changeDetectorRef, 'markForCheck');
-
-    // Create component instance directly
-    component = new TeamStructureComponent(
-      elementRef,
-      changeDetectorRef,
-      configService as any,
-      teamStructureService as any,
-      alignmentService as any
-    );
-
-    // Mock echarts
-    mockEchartsInstance = (echarts as any).init();
-    component['chart'] = mockEchartsInstance;
-
-    // Mock document body for DOM operations
-    document.body.innerHTML = '';
-    const chartContainer = document.createElement('div');
-    chartContainer.setAttribute('id', 'chart');
-    chartContainer.style.width = '1000px';
-    chartContainer.style.height = '600px';
-    Object.defineProperty(chartContainer, 'offsetWidth', {
-      value: 1000,
-      configurable: true,
-    });
-    Object.defineProperty(chartContainer, 'offsetHeight', {
-      value: 600,
-      configurable: true,
-    });
-    document.body.appendChild(chartContainer);
-
-    // Setup global mocks
-    global.ResizeObserver = jest.fn().mockImplementation(() => ({
-      observe: jest.fn(),
-      unobserve: jest.fn(),
-      disconnect: jest.fn(),
-    }));
+    // Mock chart to avoid canvas issues
+    (component as any).chart = {
+      setOption: jest.fn(),
+      resize: jest.fn(),
+      getDom: jest.fn().mockReturnValue({ offsetWidth: 800 }),
+      on: jest.fn(),
+      dispose: jest.fn(),
+      getOption: jest.fn().mockReturnValue({ series: [{ data: [] }] }),
+    };
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.useRealTimers();
-    document.body.innerHTML = '';
+    component.ngOnDestroy();
   });
 
-  describe('Basic component functions', () => {
-    it('should create component', () => {
-      expect(component).toBeTruthy();
-    });
+  // ============================================================================
+  // BASIC COMPONENT TESTS
+  // ============================================================================
 
-    it('should have initial properties set correctly', () => {
-      expect(component.selectedNode).toBeNull();
-      expect(component.alignmentData).toEqual([]);
-      expect(component.rowSelected).toBe(false);
-    });
-
-    it('should load team structure data', () => {
-      component['loadTeamStructureData']();
-      expect(component['teamStructureData']).toEqual(mockTeamStructureData);
-    });
-
-    it('should handle row selection', () => {
-      const event = { selectedRows: [{ id: 1 }] };
-      component.onRowSelect(event as any);
-      expect(component.rowSelected).toBe(true);
-    });
-
-    it('should handle row deselection', () => {
-      component.rowSelected = true;
-      const event = { selectedRows: [] };
-      component.onRowSelect(event as any);
-      expect(component.rowSelected).toBe(false);
-    });
-
-    it('should handle data state change', () => {
-      const state = { skip: 0, take: 10 };
-      component.dataStateChange(state);
-      expect(component.gridState.skip).toBe(0);
-      expect(component.gridState.take).toBe(10);
-    });
-
-    it('should format long text correctly', () => {
-      const longText =
-        'This is a very long text that should be split into multiple lines';
-      const result = component['formatLongText'](longText, 20);
-      expect(result).toContain('\n');
-    });
-
-    it('should calculate font size based on text length', () => {
-      const shortText = 'Test';
-      const longText = 'This is a very long text';
-
-      const shortSize = component['calculateFontSize'](shortText, 16);
-      const longSize = component['calculateFontSize'](longText, 16);
-
-      expect(longSize).toBeLessThan(shortSize);
-    });
-
-    it('should get node ID by type', () => {
-      component['teamStructureData'] = mockTeamStructureData;
-      const portfolioId = component['getNodeIdByType']('Portfolio');
-      const pdtId = component['getNodeIdByType']('PDT');
-      const teamId = component['getNodeIdByType']('Team');
-
-      expect(portfolioId).toBe('1');
-      expect(pdtId).toBe('2');
-      expect(teamId).toBe('3');
-    });
-
-    it('should clean up on destroy', () => {
-      jest.spyOn(component as any, 'disposeChart').mockImplementation(() => {});
-      jest
-        .spyOn(component as any, 'unsubscribeAll')
-        .mockImplementation(() => {});
-
-      component.ngOnDestroy();
-
-      expect(component['disposeChart']).toHaveBeenCalled();
-      expect(component['unsubscribeAll']).toHaveBeenCalled();
-    });
-
-    it('should initialize component after view init', () => {
-      jest.spyOn(component as any, 'loadTeamStructureData');
-      jest.spyOn(component as any, 'initChart');
-
-      component.ngAfterViewInit();
-      jest.runAllTimers();
-
-      expect(component['loadTeamStructureData']).toHaveBeenCalled();
-      expect(component['initChart']).toHaveBeenCalled();
-    });
+  it('should create', () => {
+    expect(component).toBeTruthy();
   });
 
-  describe('Chart initialization and manipulation', () => {
-    beforeEach(() => {
-      component['teamStructureData'] = mockTeamStructureData;
-    });
+  it('should initialize with default values', () => {
+    expect(component.selectedNode).toBeNull();
+    expect(component.portfolioCount).toBe(0);
+    expect(component.rowSelected).toBe(false);
+    expect(component.alignmentData).toEqual([]);
+    expect(component.gridView).toEqual({ data: [], total: 0 });
+  });
 
-    it('should initialize chart correctly', () => {
-      component['initChart']();
+  // ============================================================================
+  // LAYOUT MANAGEMENT TESTS
+  // ============================================================================
 
-      expect(echarts.init).toHaveBeenCalled();
-      expect(mockEchartsInstance.setOption).toHaveBeenCalled();
-      expect(mockEchartsInstance.on).toHaveBeenCalledWith(
-        'click',
-        expect.any(Function)
-      );
-    });
+  it('should determine correct layout type based on width', () => {
+    expect((component as any).getLayoutType(500)).toBe('vertical');
+    expect((component as any).getLayoutType(700)).toBe('compact');
+    expect((component as any).getLayoutType(900)).toBe('default');
+  });
 
-    it('should not initialize chart when DOM element is missing', () => {
-      document.body.innerHTML = '';
-      jest.clearAllMocks(); // Clear previous calls
-      component['initChart']();
-      expect(echarts.init).not.toHaveBeenCalled();
-    });
+  it('should determine correct legend position based on width', () => {
+    expect((component as any).getLegendPosition(500)).toBe('top-center');
+    expect((component as any).getLegendPosition(700)).toBe('top-right');
+  });
 
-    it('should handle window resize', () => {
-      jest.spyOn(component as any, 'updateNodePositions');
+  // ============================================================================
+  // NODE INTERACTION TESTS
+  // ============================================================================
+
+  it('should handle node selection correctly', () => {
+    jest
+      .spyOn(mockAlignmentService, 'getPortfolioAlignments')
+      .mockReturnValue(mockAlignments);
+    (component as any).teamStructureData = mockTeamStructureData;
+
+    (component as any).handleNodeSelection('Portfolio');
+
+    expect(component.selectedNode).toBe('Portfolio');
+    expect(mockAlignmentService.getPortfolioAlignments).toHaveBeenCalled();
+  });
+
+  it('should reset selected node correctly', () => {
+    component.selectedNode = 'Portfolio';
+    component.alignmentData = mockAlignments;
+    component.rowSelected = true;
+
+    component.resetSelectedNode();
+
+    expect(component.selectedNode).toBeNull();
+    expect(component.alignmentData).toEqual([]);
+    expect(component.rowSelected).toBe(false);
+    expect(component.gridView).toEqual({ data: [], total: 0 });
+  });
+
+  it('should identify non-interactive nodes correctly', () => {
+    expect((component as any).isNonInteractiveNode('vertical-junction')).toBe(
+      true
+    );
+    expect((component as any).isNonInteractiveNode('v1')).toBe(true);
+    expect((component as any).isNonInteractiveNode('Portfolio')).toBe(false);
+  });
+
+  // ============================================================================
+  // GRID FUNCTIONALITY TESTS
+  // ============================================================================
+
+  it('should update grid view with paginated data', () => {
+    component.alignmentData = mockAlignments;
+    component.gridState = {
+      skip: 0,
+      take: 1,
+      sort: [],
+      filter: { logic: 'and', filters: [] },
+    };
+
+    (component as any).updateGridView();
+
+    expect(component.gridView.data.length).toBe(1);
+    expect(component.gridView.total).toBe(2);
+  });
+
+  it('should handle data state changes', () => {
+    component.alignmentData = [...mockAlignments];
+    const mockState: DataStateChangeEvent = {
+      skip: 0,
+      take: 10,
+      sort: [{ field: 'alignToName', dir: 'asc' }],
+      filter: { logic: 'and', filters: [] },
+    };
+
+    component.dataStateChange(mockState);
+
+    expect(component.gridState).toEqual(mockState);
+  });
+
+  it('should handle row selection', () => {
+    const mockEvent: SelectionEvent = {
+      selectedRows: [{ dataItem: mockAlignments[0], index: 0 }],
+      deselectedRows: [],
+    };
+
+    component.onRowSelect(mockEvent);
+
+    expect(component.rowSelected).toBe(true);
+  });
+
+  // ============================================================================
+  // UTILITY METHOD TESTS
+  // ============================================================================
+
+  it('should get current scale and width correctly', () => {
+    const result = component.getCurrentScaleAndWidth();
+
+    expect(result.width).toBe(800);
+    expect(result.scale).toBe(0.8); // Based on mock config service logic
+  });
+
+  it('should get current scale correctly', () => {
+    const scale = component.getCurrentScale();
+
+    expect(scale).toBe(0.8); // Based on mock config service logic
+  });
+
+  it('should load team structure data', () => {
+    jest
+      .spyOn(mockTeamStructureService, 'getTeamStructureData')
+      .mockReturnValue(mockTeamStructureData);
+
+    (component as any).loadTeamStructureData();
+
+    expect(mockTeamStructureService.getTeamStructureData).toHaveBeenCalled();
+  });
+
+  it('should update node data counts correctly', () => {
+    (component as any).teamStructureData = mockTeamStructureData;
+    (component as any).updateNodeDataCounts();
+
+    expect(component.portfolioCount).toBe(1);
+    expect(component.nodeDataCounts['AIT']).toBe(5);
+    expect(component.nodeDataCounts['Team Backlog']).toBe(10);
+    expect(component.nodeDataCounts['SPK']).toBe(3);
+    expect(component.nodeDataCounts['Jira Board']).toBe(7);
+  });
+
+  it('should handle empty team structure data', () => {
+    (component as any).teamStructureData = [];
+    (component as any).updateNodeDataCounts();
+
+    expect(component.portfolioCount).toBe(0);
+    expect(component.nodeDataCounts['AIT']).toBe(0);
+  });
+
+  // ============================================================================
+  // CLEANUP TESTS
+  // ============================================================================
+
+  it('should dispose chart on destroy', () => {
+    const mockChart = (component as any).chart;
+
+    component.ngOnDestroy();
+
+    expect(mockChart.dispose).toHaveBeenCalled();
+    expect((component as any).chart).toBeNull();
+  });
+
+  // ============================================================================
+  // ALIGNMENT DATA LOADING TESTS
+  // ============================================================================
+
+  it('should load portfolio alignments correctly', () => {
+    jest
+      .spyOn(mockAlignmentService, 'getPortfolioAlignments')
+      .mockReturnValue(mockAlignments);
+    (component as any).teamStructureData = mockTeamStructureData;
+
+    (component as any).loadAlignmentData('Portfolio', '1');
+
+    expect(mockAlignmentService.getPortfolioAlignments).toHaveBeenCalled();
+    expect(component.alignmentData).toEqual(mockAlignments);
+  });
+
+  it('should load other node alignments correctly', () => {
+    jest
+      .spyOn(mockAlignmentService, 'getAlignment')
+      .mockReturnValue(mockAlignments);
+    (component as any).teamStructureData = mockTeamStructureData;
+
+    (component as any).loadAlignmentData('PDT', '2');
+
+    expect(mockAlignmentService.getAlignment).toHaveBeenCalledWith('PDT', '3');
+    expect(component.alignmentData).toEqual(mockAlignments);
+  });
+
+  it('should handle unknown node types', () => {
+    (component as any).teamStructureData = mockTeamStructureData;
+
+    (component as any).loadAlignmentData('Unknown', '999');
+
+    expect(component.alignmentData).toEqual([]);
+  });
+
+  // ============================================================================
+  // COVERAGE ENHANCEMENT TESTS
+  // ============================================================================
+
+  it('should handle grid view updates with empty data', () => {
+    component.alignmentData = [];
+    (component as any).updateGridView();
+
+    expect(component.gridView).toEqual({ data: [], total: 0 });
+  });
+
+  it('should handle data state changes with sorting', () => {
+    component.alignmentData = [...mockAlignments];
+    const mockState: DataStateChangeEvent = {
+      skip: 0,
+      take: 10,
+      sort: [{ field: 'alignToName', dir: 'desc' }],
+      filter: { logic: 'and', filters: [] },
+    };
+
+    component.dataStateChange(mockState);
+
+    expect(component.gridState).toEqual(mockState);
+    expect(component.alignmentData[0].alignToName).toBe('Test Alignment 2');
+  });
+
+  it('should handle row deselection', () => {
+    const mockEvent: SelectionEvent = {
+      selectedRows: [],
+      deselectedRows: [{ dataItem: mockAlignments[0], index: 0 }],
+    };
+
+    component.onRowSelect(mockEvent);
+
+    expect(component.rowSelected).toBe(false);
+  });
+
+  // ============================================================================
+  // ADDITIONAL COVERAGE TESTS
+  // ============================================================================
+
+  it('should handle chart initialization with valid DOM element', () => {
+    const mockElement = {
+      style: { width: '800px', height: '500px' },
+      offsetWidth: 800,
+    };
+
+    // Mock document.getElementById to return a valid element
+    const originalGetElementById = document.getElementById;
+    document.getElementById = jest.fn().mockReturnValue(mockElement);
+
+    // Mock the chart initialization without actually calling echarts.init
+    jest.spyOn(component, 'setupChartClickHandler' as any);
+    jest.spyOn(component, 'updateNodeLabels' as any);
+
+    (component as any).teamStructureData = mockTeamStructureData;
+
+    // Mock the chart object directly instead of trying to initialize it
+    (component as any).chart = {
+      setOption: jest.fn(),
+      resize: jest.fn(),
+      getDom: jest.fn().mockReturnValue(mockElement),
+      on: jest.fn(),
+      dispose: jest.fn(),
+      getOption: jest.fn().mockReturnValue({ series: [{ data: [] }] }),
+    };
+
+    // Test the chart setup logic without actual initialization
+    expect(() => {
+      (component as any).setupChartClickHandler();
+      (component as any).updateNodeLabels();
+    }).not.toThrow();
+
+    // Restore original function
+    document.getElementById = originalGetElementById;
+  });
+
+  it('should handle resize when chart is null', () => {
+    (component as any).chart = null;
+
+    expect(() => {
       component.onResize();
-      expect(component['updateNodePositions']).toHaveBeenCalled();
-    });
+    }).not.toThrow();
+  });
 
-    it('should get current scale', () => {
-      const scale = component.getCurrentScale();
-      expect(typeof scale).toBe('number');
-      expect(scale).toBeGreaterThan(0);
-    });
+  it('should handle resize when already resizing', () => {
+    (component as any).isResizing = true;
 
-    it('should handle chart click events', () => {
-      component['setupChartClickHandler']();
-      mockEchartsInstance.clickCallback({ data: { name: 'Portfolio' } });
+    component.onResize();
 
-      expect(component.selectedNode).toBe('Portfolio');
-      expect(changeDetectorRef.markForCheck).toHaveBeenCalled();
-    });
+    // Should exit early without doing anything
+    expect((component as any).isResizing).toBe(true);
+  });
 
-    it('should handle click on non-interactive nodes', () => {
-      component['setupChartClickHandler']();
-      mockEchartsInstance.clickCallback({
-        data: { name: 'vertical-junction' },
+  it('should handle chart click on non-interactive nodes', () => {
+    const mockParams = {
+      dataType: 'node',
+      data: { name: 'vertical-junction' },
+    };
+
+    jest.spyOn(component, 'handleNodeSelection' as any);
+
+    // Simulate chart click handler
+    const clickHandler = jest.fn();
+    (component as any).chart = {
+      on: jest.fn((event, handler) => {
+        if (event === 'click') {
+          clickHandler.mockImplementation(handler);
+        }
+      }),
+      setOption: jest.fn(),
+      resize: jest.fn(),
+      getDom: jest.fn().mockReturnValue({ offsetWidth: 800 }),
+      dispose: jest.fn(),
+      getOption: jest.fn().mockReturnValue({ series: [{ data: [] }] }),
+    };
+
+    (component as any).setupChartClickHandler();
+    clickHandler(mockParams);
+
+    expect((component as any).handleNodeSelection).not.toHaveBeenCalled();
+  });
+
+  it('should handle chart click on interactive nodes', () => {
+    const mockParams = {
+      dataType: 'node',
+      data: { name: 'Portfolio' },
+    };
+
+    jest.spyOn(component, 'handleNodeSelection' as any);
+
+    // Simulate chart click handler
+    const clickHandler = jest.fn();
+    (component as any).chart = {
+      on: jest.fn((event, handler) => {
+        if (event === 'click') {
+          clickHandler.mockImplementation(handler);
+        }
+      }),
+      setOption: jest.fn(),
+      resize: jest.fn(),
+      getDom: jest.fn().mockReturnValue({ offsetWidth: 800 }),
+      dispose: jest.fn(),
+      getOption: jest.fn().mockReturnValue({ series: [{ data: [] }] }),
+    };
+
+    (component as any).setupChartClickHandler();
+    clickHandler(mockParams);
+
+    expect((component as any).handleNodeSelection).toHaveBeenCalledWith(
+      'Portfolio'
+    );
+  });
+
+  it('should handle chart click on non-node elements', () => {
+    const mockParams = {
+      dataType: 'edge',
+      data: { name: 'some-edge' },
+    };
+
+    jest.spyOn(component, 'handleNodeSelection' as any);
+
+    // Simulate chart click handler
+    const clickHandler = jest.fn();
+    (component as any).chart = {
+      on: jest.fn((event, handler) => {
+        if (event === 'click') {
+          clickHandler.mockImplementation(handler);
+        }
+      }),
+      setOption: jest.fn(),
+      resize: jest.fn(),
+      getDom: jest.fn().mockReturnValue({ offsetWidth: 800 }),
+      dispose: jest.fn(),
+      getOption: jest.fn().mockReturnValue({ series: [{ data: [] }] }),
+    };
+
+    (component as any).setupChartClickHandler();
+    clickHandler(mockParams);
+
+    expect((component as any).handleNodeSelection).not.toHaveBeenCalled();
+  });
+
+  it('should update chart height and legend position correctly', () => {
+    const mockContainer = {
+      style: { height: '', minHeight: '' },
+    };
+    const mockLegend = {
+      classList: { remove: jest.fn(), add: jest.fn() },
+    };
+
+    jest
+      .spyOn(component['elementRef'].nativeElement, 'querySelector')
+      .mockImplementation((selector) => {
+        if (selector === '.chart-container') return mockContainer;
+        if (selector === '.legend-container') return mockLegend;
+        return null;
       });
 
-      expect(component.selectedNode).toBeNull();
-    });
+    (component as any).updateChartHeight('vertical');
+    expect(mockContainer.style.height).toBe('750px');
 
-    it('should identify non-interactive nodes correctly', () => {
-      expect(component['isNonInteractiveNode']('vertical-junction')).toBe(true);
-      expect(component['isNonInteractiveNode']('horizontal-line')).toBe(true);
-      expect(component['isNonInteractiveNode']('v1')).toBe(true);
-      expect(component['isNonInteractiveNode']('Portfolio')).toBe(false);
-    });
+    (component as any).updateChartHeight('compact');
+    expect(mockContainer.style.height).toBe('400px');
 
-    it('should reset selected node', () => {
-      component.selectedNode = 'Portfolio';
+    (component as any).updateChartHeight('default');
+    expect(mockContainer.style.height).toBe('500px');
+
+    (component as any).updateLegendPosition('top-center');
+    expect(mockLegend.classList.add).toHaveBeenCalledWith('legend-top-center');
+
+    (component as any).updateLegendPosition('top-right');
+    expect(mockLegend.classList.add).toHaveBeenCalledWith('legend-top-right');
+  });
+
+  it('should handle missing DOM elements gracefully', () => {
+    jest
+      .spyOn(component['elementRef'].nativeElement, 'querySelector')
+      .mockReturnValue(null);
+
+    expect(() => {
+      (component as any).updateChartHeight('vertical');
+      (component as any).updateLegendPosition('top-center');
+    }).not.toThrow();
+  });
+
+  it('should check and update layout when layout type changes', () => {
+    jest.spyOn(component, 'updateChartHeight' as any);
+    jest.spyOn(component, 'checkAndUpdateLegendPosition' as any);
+
+    (component as any).currentLayoutType = 'default';
+    (component as any).checkAndUpdateLayout(500); // Should trigger vertical layout
+
+    expect((component as any).updateChartHeight).toHaveBeenCalledWith(
+      'vertical'
+    );
+    expect(
+      (component as any).checkAndUpdateLegendPosition
+    ).toHaveBeenCalledWith(500);
+  });
+
+  it('should check and update legend position when position changes', () => {
+    jest.spyOn(component, 'updateLegendPosition' as any);
+
+    (component as any).currentLegendPosition = 'top-right';
+    (component as any).checkAndUpdateLegendPosition(500); // Should trigger top-center
+
+    expect((component as any).updateLegendPosition).toHaveBeenCalledWith(
+      'top-center'
+    );
+  });
+
+  it('should handle node size updates for main nodes', () => {
+    const mockNodes = [
+      { name: 'Portfolio', symbolSize: 70 },
+      { name: 'PDT', symbolSize: 70 },
+      { name: 'Team', symbolSize: 70 },
+    ];
+
+    jest
+      .spyOn(component, 'getNodesFromOption' as any)
+      .mockReturnValue(mockNodes);
+
+    (component as any).updateNodeSizes('Portfolio');
+
+    expect(mockNodes[0].symbolSize).toBeCloseTo(80.5); // 70 * 1.15
+    expect(mockNodes[1].symbolSize).toBe(70);
+    expect(mockNodes[2].symbolSize).toBe(70);
+  });
+
+  it('should handle node size updates for contributor nodes', () => {
+    const mockNodes = [
+      { name: 'AIT', symbolSize: 50 },
+      { name: 'Team Backlog', symbolSize: 50 },
+    ];
+
+    jest
+      .spyOn(component, 'getNodesFromOption' as any)
+      .mockReturnValue(mockNodes);
+
+    (component as any).updateNodeSizes('AIT');
+
+    expect(mockNodes[0].symbolSize).toBeCloseTo(57.5); // 50 * 1.15
+    expect(mockNodes[1].symbolSize).toBe(50);
+  });
+
+  it('should handle node label updates', () => {
+    const mockNodes = [
+      { name: 'Portfolio', label: null },
+      { name: 'AIT', label: null },
+    ];
+
+    jest
+      .spyOn(component, 'getNodesFromOption' as any)
+      .mockReturnValue(mockNodes);
+    jest
+      .spyOn(component, 'getNodeLabel' as any)
+      .mockReturnValue({ show: true });
+
+    (component as any).updateNodeLabels();
+
+    expect((component as any).getNodeLabel).toHaveBeenCalledWith('Portfolio');
+    expect((component as any).getNodeLabel).toHaveBeenCalledWith('AIT');
+  });
+
+  it('should get node labels for different node types', () => {
+    (component as any).teamStructureData = mockTeamStructureData;
+
+    const portfolioLabel = (component as any).getNodeLabel('Portfolio');
+    const pdtLabel = (component as any).getNodeLabel('PDT');
+    const teamLabel = (component as any).getNodeLabel('Team');
+    const aitLabel = (component as any).getNodeLabel('AIT');
+    const unknownLabel = (component as any).getNodeLabel('Unknown');
+
+    expect(portfolioLabel).toEqual({ show: true });
+    expect(pdtLabel).toEqual({ show: true });
+    expect(teamLabel).toEqual({ show: true });
+    expect(aitLabel).toEqual({ show: true });
+    expect(unknownLabel).toBeNull();
+  });
+
+  it('should handle getNodeLabel with no team structure data', () => {
+    (component as any).teamStructureData = null;
+
+    const result = (component as any).getNodeLabel('Portfolio');
+
+    expect(result).toBeNull();
+  });
+
+  it('should handle resetAllNodeSizes with different node types', () => {
+    const mockNodes = [
+      { name: 'Portfolio', symbolSize: 80, label: null },
+      { name: 'AIT', symbolSize: 60, label: null },
+      { name: 'vertical-junction', symbolSize: 10, label: null },
+    ];
+
+    jest
+      .spyOn(component, 'getNodeLabel' as any)
+      .mockReturnValue({ show: true });
+
+    (component as any).resetAllNodeSizes(mockNodes, mockChartFonts);
+
+    expect(mockNodes[0].symbolSize).toBe(70); // Reset to normal size
+    expect(mockNodes[1].symbolSize).toBe(50); // Reset to normal size
+    expect(mockNodes[2].symbolSize).toBe(10); // Unchanged for non-interactive nodes
+  });
+
+  it('should handle data state changes without sorting', () => {
+    component.alignmentData = [...mockAlignments];
+    const mockState: DataStateChangeEvent = {
+      skip: 0,
+      take: 10,
+      sort: [],
+      filter: { logic: 'and', filters: [] },
+    };
+
+    component.dataStateChange(mockState);
+
+    expect(component.gridState).toEqual(mockState);
+    // Data should remain in original order
+    expect(component.alignmentData[0].alignToName).toBe('Test Alignment 1');
+  });
+
+  it('should handle grid pagination correctly', () => {
+    component.alignmentData = mockAlignments;
+    component.gridState = {
+      skip: 1,
+      take: 1,
+      sort: [],
+      filter: { logic: 'and', filters: [] },
+    };
+
+    (component as any).updateGridView();
+
+    expect(component.gridView.data.length).toBe(1);
+    expect(component.gridView.data[0]).toEqual(mockAlignments[1]);
+    expect(component.gridView.total).toBe(2);
+  });
+
+  it('should handle createChartOptions with empty team structure data', () => {
+    (component as any).teamStructureData = [];
+
+    const result = (component as any).createChartOptions(
+      800,
+      400,
+      1,
+      mockChartFonts
+    );
+
+    expect(result).toEqual({});
+  });
+
+  it('should handle createChartOptions with null team structure data', () => {
+    (component as any).teamStructureData = null;
+
+    const result = (component as any).createChartOptions(
+      800,
+      400,
+      1,
+      mockChartFonts
+    );
+
+    expect(result).toEqual({});
+  });
+
+  it('should apply chart formatting correctly', () => {
+    const mockDom = { style: { cursor: '' } };
+    (component as any).chart = {
+      getDom: jest.fn().mockReturnValue(mockDom),
+      setOption: jest.fn(),
+      resize: jest.fn(),
+      on: jest.fn(),
+      dispose: jest.fn(),
+      getOption: jest.fn().mockReturnValue({ series: [{ data: [] }] }),
+    };
+
+    (component as any).applyChartFormatting();
+
+    expect(mockDom.style.cursor).toBe('default');
+  });
+
+  it('should handle applyChartFormatting with null chart DOM', () => {
+    (component as any).chart = {
+      getDom: jest.fn().mockReturnValue(null),
+      setOption: jest.fn(),
+      resize: jest.fn(),
+      on: jest.fn(),
+      dispose: jest.fn(),
+      getOption: jest.fn().mockReturnValue({ series: [{ data: [] }] }),
+    };
+
+    expect(() => {
+      (component as any).applyChartFormatting();
+    }).not.toThrow();
+  });
+
+  it('should handle getCurrentScaleAndWidth with null chart', () => {
+    (component as any).chart = null;
+
+    const result = component.getCurrentScaleAndWidth();
+
+    expect(result.width).toBe(800); // Default width
+    expect(result.scale).toBe(0.8); // Based on default width
+  });
+
+  it('should handle getNodesFromOption with null chart', () => {
+    (component as any).chart = null;
+
+    const result = (component as any).getNodesFromOption();
+
+    expect(result).toBeNull();
+  });
+
+  it('should handle resetSelectedNode with null nodes', () => {
+    jest.spyOn(component, 'getNodesFromOption' as any).mockReturnValue(null);
+
+    expect(() => {
       component.resetSelectedNode();
-      expect(component.selectedNode).toBeNull();
-    });
+    }).not.toThrow();
 
-    it('should dispose chart properly', () => {
-      component['chart'] = mockEchartsInstance;
-      component['disposeChart']();
-      expect(mockEchartsInstance.dispose).toHaveBeenCalled();
-      expect(component['chart']).toBeNull();
-    });
-
-    it('should handle chart disposal when chart is null', () => {
-      component['chart'] = null;
-      expect(() => component['disposeChart']()).not.toThrow();
-    });
+    expect(component.selectedNode).toBeNull();
+    expect(component.alignmentData).toEqual([]);
   });
 
-  describe('Node positioning and sizing', () => {
-    beforeEach(() => {
-      component['teamStructureData'] = mockTeamStructureData;
-    });
+  it('should handle resize with chart and proper timing', fakeAsync(() => {
+    const mockChart = {
+      setOption: jest.fn(),
+      resize: jest.fn(),
+      getDom: jest.fn().mockReturnValue({ offsetWidth: 800 }),
+      on: jest.fn(),
+      dispose: jest.fn(),
+      getOption: jest.fn().mockReturnValue({ series: [{ data: [] }] }),
+    };
 
-    it('should update node data counts', () => {
-      component['updateNodeDataCounts']();
-      expect(component.nodeDataCounts['AIT']).toBe(5);
-      expect(component.nodeDataCounts['Team Backlog']).toBe(10);
-      expect(component.nodeDataCounts['SPK']).toBe(3);
-      expect(component.nodeDataCounts['Jira Board']).toBe(7);
-    });
+    (component as any).chart = mockChart;
+    (component as any).isResizing = false;
+    (component as any).selectedNode = 'Portfolio';
 
-    it('should get nodes from chart option', () => {
-      const mockOption = {
-        series: [
-          {
-            data: [
-              { name: 'Portfolio', category: 'main', x: 100, y: 100 },
-              { name: 'PDT', category: 'main', x: 200, y: 100 },
-            ],
-          },
-        ],
-      };
+    jest.spyOn(component, 'checkAndUpdateLayout' as any);
 
-      const nodes = component['getNodesFromOption'](mockOption);
-      expect(nodes).toHaveLength(2);
-      expect(nodes![0].name).toBe('Portfolio');
-      expect(nodes![1].name).toBe('PDT');
-    });
+    component.onResize();
 
-    it('should return null for invalid chart option', () => {
-      const nodes = component['getNodesFromOption'](null);
-      expect(nodes).toBeNull();
-    });
+    expect((component as any).isResizing).toBe(true);
 
-    it('should position main nodes correctly', () => {
-      const node: NodeData = {
-        name: 'Portfolio',
-        category: 'main',
-        x: 0,
-        y: 0,
-        symbolSize: 70,
-      };
-      component['positionMainNode'](node, 100, 200, 300, 1, mockChartFonts);
+    tick(150);
 
-      expect(node.x).toBe(100);
-      expect(node.y).toBe(150); // Actual implementation uses 150 * scale
-    });
+    expect((component as any).checkAndUpdateLayout).toHaveBeenCalled();
+    expect((component as any).isResizing).toBe(false);
+  }));
 
-    it('should position contributor nodes correctly', () => {
-      const node: NodeData = {
-        name: 'AIT',
-        category: 'contributor',
-        x: 0,
-        y: 0,
-        symbolSize: 50,
-      };
-      component['positionContributorNode'](node, 250, 100, 1, mockChartFonts);
+  it('should handle layout changes that do not trigger updates', () => {
+    jest.spyOn(component, 'updateChartHeight' as any);
+    jest.spyOn(component, 'checkAndUpdateLegendPosition' as any);
 
-      expect(node.x).toBe(250);
-      expect(node.y).toBe(336); // Based on actual calculation: (270 + (380 - 270) * 0.6) * 1
-    });
+    (component as any).currentLayoutType = 'vertical';
+    (component as any).checkAndUpdateLayout(500); // Same layout type
 
-    it('should update node sizes correctly', () => {
-      jest.spyOn(component as any, 'resetAllNodeSizes');
-      const mockNodes = [
-        { name: 'Portfolio', category: 'main', x: 100, y: 100, symbolSize: 70 },
-        {
-          name: 'AIT',
-          category: 'contributor',
-          x: 250,
-          y: 200,
-          symbolSize: 50,
-        },
-      ];
-      mockEchartsInstance.getOption.mockReturnValue({
-        series: [{ data: mockNodes }],
-      });
-
-      component['updateNodeSizes']('Portfolio', 90, 60);
-
-      // The actual implementation multiplies by 1.15 for selected nodes
-      expect(
-        mockNodes.find((n) => n.name === 'Portfolio')?.symbolSize
-      ).toBeCloseTo(103.5, 1); // 90 * 1.15
-      expect(mockEchartsInstance.setOption).toHaveBeenCalled();
-    });
-
-    it('should reset all node sizes', () => {
-      const nodes = [
-        { name: 'Portfolio', category: 'main', x: 100, y: 100, symbolSize: 90 },
-        {
-          name: 'AIT',
-          category: 'contributor',
-          x: 250,
-          y: 200,
-          symbolSize: 60,
-        },
-      ];
-
-      component['resetAllNodeSizes'](nodes, mockChartFonts);
-
-      expect(nodes[0].symbolSize).toBe(70);
-      expect(nodes[1].symbolSize).toBe(50);
-    });
+    expect((component as any).updateChartHeight).not.toHaveBeenCalled();
+    expect(
+      (component as any).checkAndUpdateLegendPosition
+    ).toHaveBeenCalledWith(500);
   });
 
-  describe('Node labels and formatting', () => {
-    beforeEach(() => {
-      component['teamStructureData'] = mockTeamStructureData;
-      component['updateNodeDataCounts']();
-    });
+  it('should handle legend position changes that do not trigger updates', () => {
+    jest.spyOn(component, 'updateLegendPosition' as any);
 
-    it('should get node label for main nodes', () => {
-      const label = component['getNodeLabel']('Portfolio');
-      expect(label).toBeDefined();
-      expect(label.rich).toBeDefined();
-    });
+    (component as any).currentLegendPosition = 'top-center';
+    (component as any).checkAndUpdateLegendPosition(500); // Same position
 
-    it('should get node label for contributor nodes', () => {
-      const label = component['getNodeLabel']('AIT');
-      expect(label).toBeDefined();
-      expect(label.rich).toBeDefined();
-    });
-
-    it('should create main node label correctly', () => {
-      const label = component['createMainNodeLabel'](
-        'Portfolio',
-        'Test Portfolio',
-        mockChartFonts
-      );
-      expect(label.formatter).toContain('{name|Portfolio}');
-      expect(label.formatter).toContain('{title|Test Portfolio}');
-    });
-
-    it('should create contributor node label correctly', () => {
-      const label = component['createContributorNodeLabel'](
-        'AIT',
-        mockChartFonts
-      );
-      expect(label.formatter).toContain('{name|AIT}');
-      expect(label.formatter).toContain('{count|5}');
-    });
-
-    it('should format node label with light style', () => {
-      const label = component['formatNodeLabel']('Test', 'Title', 16, true);
-      expect(label.rich.name.color).toBe('#000000');
-      expect(label.rich.title.color).toBe('#000000');
-    });
-
-    it('should format node label with dark style', () => {
-      const label = component['formatNodeLabel']('Test', 'Title', 16, false);
-      expect(label.rich.name.color).toBe('#FFFFFF');
-      expect(label.rich.title.color).toBe('#FFFFFF');
-    });
-
-    it('should format long text by breaking lines', () => {
-      const longText =
-        'This is a very long text that should be broken into multiple lines';
-      const result = component['formatLongText'](longText, 20);
-      expect(result.split('\n').length).toBeGreaterThan(1);
-    });
-
-    it('should not break short text', () => {
-      const shortText = 'Short text';
-      const result = component['formatLongText'](shortText, 20);
-      expect(result).toBe(shortText);
-    });
-
-    it('should calculate smaller font size for longer text', () => {
-      const shortText = 'Short';
-      const longText = 'This is a very long text with many characters';
-
-      const shortSize = component['calculateFontSize'](shortText, 16);
-      const longSize = component['calculateFontSize'](longText, 16);
-
-      expect(longSize).toBeLessThan(shortSize);
-      expect(longSize).toBeGreaterThanOrEqual(10);
-    });
-
-    it('should update node labels correctly', () => {
-      mockEchartsInstance.getOption.mockReturnValue({
-        series: [
-          {
-            data: [
-              { name: 'Portfolio', category: 'main' },
-              { name: 'AIT', category: 'contributor' },
-            ],
-          },
-        ],
-      });
-
-      component['updateNodeLabels']();
-
-      expect(mockEchartsInstance.setOption).toHaveBeenCalled();
-    });
+    expect((component as any).updateLegendPosition).not.toHaveBeenCalled();
   });
 
-  describe('Grid operations', () => {
-    beforeEach(() => {
-      component.alignmentData = mockAlignments;
-    });
+  it('should handle updateNodeSizes with null nodes', () => {
+    jest.spyOn(component, 'getNodesFromOption' as any).mockReturnValue(null);
 
-    it('should update grid state', () => {
-      const state = { skip: 10, take: 5 };
-      component.dataStateChange(state);
-      expect(component.gridState.skip).toBe(10);
-      expect(component.gridState.take).toBe(5);
-    });
-
-    it('should load grid data based on current state', () => {
-      component['updateGridView']();
-      expect(component.gridView.data.length).toBeLessThanOrEqual(
-        component.gridState.take || 10
-      );
-      expect(component.gridView.total).toBe(mockAlignments.length);
-    });
-
-    it('should load alignment data for selected node', () => {
-      jest
-        .spyOn(alignmentService, 'getAlignments')
-        .mockReturnValue(mockAlignments);
-      jest.spyOn(component as any, 'updateGridView');
-      component['teamStructureData'] = mockTeamStructureData; // Set the data first
-
-      component['loadAlignmentData']('Portfolio', '1');
-
-      expect(alignmentService.getAlignments).toHaveBeenCalledWith(
-        'Portfolio',
-        mockTeamStructureData
-      );
-      expect(component.alignmentData).toEqual(mockAlignments);
-      expect(component['updateGridView']).toHaveBeenCalled();
-    });
-
-    it('should handle empty alignment data', () => {
-      jest.spyOn(alignmentService, 'getAlignments').mockReturnValue([]);
-      component['loadAlignmentData']('NonExistent', '99');
-      expect(component.alignmentData).toEqual([]);
-    });
-
-    it('should handle pagination in grid view', () => {
-      component.gridState.skip = 1;
-      component.gridState.take = 1;
-      component['updateGridView']();
-
-      expect(component.gridView.data.length).toBe(1);
-      expect(component.gridView.data[0]).toEqual(mockAlignments[1]);
-    });
+    expect(() => {
+      (component as any).updateNodeSizes('Portfolio');
+    }).not.toThrow();
   });
 
-  describe('Utility functions', () => {
-    it('should format long text correctly', () => {
-      const longText =
-        'This is a very long text that should be split into multiple lines';
-      const result = component['formatLongText'](longText, 20);
-      expect(result).toContain('\n');
-    });
+  it('should handle updateNodeLabels with null nodes', () => {
+    jest.spyOn(component, 'getNodesFromOption' as any).mockReturnValue(null);
 
-    it('should not break short text', () => {
-      const shortText = 'Short';
-      const result = component['formatLongText'](shortText, 20);
-      expect(result).toBe(shortText);
-    });
-
-    it('should calculate font size based on text length', () => {
-      const shortText = 'Test';
-      const longText = 'This is a very long text';
-
-      const shortSize = component['calculateFontSize'](shortText, 16);
-      const longSize = component['calculateFontSize'](longText, 16);
-
-      expect(longSize).toBeLessThan(shortSize);
-    });
-
-    it('should get correct node ID by type', () => {
-      component['teamStructureData'] = mockTeamStructureData;
-      const portfolioId = component['getNodeIdByType']('Portfolio');
-      const pdtId = component['getNodeIdByType']('PDT');
-      const teamId = component['getNodeIdByType']('Team');
-
-      expect(portfolioId).toBe('1');
-      expect(pdtId).toBe('2');
-      expect(teamId).toBe('3');
-    });
-
-    it('should return default for unknown node type', () => {
-      component['teamStructureData'] = mockTeamStructureData;
-      const unknownId = component['getNodeIdByType']('Unknown');
-      expect(unknownId).toBe('0'); // Implementation returns '0' for unknown types
-    });
-
-    it('should handle null team structure data in getNodeIdByType', () => {
-      component['teamStructureData'] = null;
-      const result = component['getNodeIdByType']('Portfolio');
-      expect(result).toBe('0'); // Implementation returns '0' when teamStructureData is null
-    });
+    expect(() => {
+      (component as any).updateNodeLabels();
+    }).not.toThrow();
   });
 
-  describe('Subscription management', () => {
-    it('should unsubscribe from all subscriptions', () => {
-      const mockSub1 = { unsubscribe: jest.fn() };
-      const mockSub2 = { unsubscribe: jest.fn() };
-      component['subscriptions'] = [mockSub1, mockSub2] as any;
+  it('should handle chart resize with timeout', fakeAsync(() => {
+    const mockChart = {
+      setOption: jest.fn(),
+      resize: jest.fn(),
+      getDom: jest.fn().mockReturnValue({ offsetWidth: 800 }),
+      on: jest.fn(),
+      dispose: jest.fn(),
+      getOption: jest.fn().mockReturnValue({ series: [{ data: [] }] }),
+    };
 
-      component['unsubscribeAll']();
+    (component as any).chart = mockChart;
+    (component as any).currentLayoutType = 'default';
 
-      expect(mockSub1.unsubscribe).toHaveBeenCalled();
-      expect(mockSub2.unsubscribe).toHaveBeenCalled();
-      expect(component['subscriptions']).toEqual([]);
-    });
+    (component as any).checkAndUpdateLayout(500); // Should trigger layout change
 
-    it('should handle empty subscriptions array', () => {
-      component['subscriptions'] = [];
-      expect(() => component['unsubscribeAll']()).not.toThrow();
-    });
+    tick(50);
+
+    expect(mockChart.resize).toHaveBeenCalled();
+  }));
+
+  it('should handle getNodeIdByType for different node types', () => {
+    expect((component as any).getNodeIdByType('Portfolio')).toBe('1');
+    expect((component as any).getNodeIdByType('PDT')).toBe('2');
+    expect((component as any).getNodeIdByType('Team')).toBe('3');
+    expect((component as any).getNodeIdByType('Unknown')).toBe('1');
   });
 
-  describe('Chart options and configuration', () => {
-    beforeEach(() => {
-      component['teamStructureData'] = mockTeamStructureData;
-    });
+  it('should handle loadAlignmentData with Portfolio type', () => {
+    jest
+      .spyOn(mockAlignmentService, 'getPortfolioAlignments')
+      .mockReturnValue(mockAlignments);
+    (component as any).teamStructureData = mockTeamStructureData;
 
-    it('should create chart options correctly', () => {
-      const options = component['createChartOptions'](
-        1000,
-        500,
-        1,
-        mockChartFonts
-      );
+    (component as any).loadAlignmentData('Portfolio', '1');
 
-      expect(options).toBeDefined();
-      expect(options.series).toHaveLength(1);
-      expect(options.series[0].type).toBe('graph');
-    });
-
-    it('should apply chart formatting', () => {
-      jest.spyOn(component as any, 'updateNodeLabels');
-      jest.spyOn(component, 'onResize');
-      component['chart'] = mockEchartsInstance; // Need chart instance for applyChartFormatting
-
-      // Mock the chart to have data for updateNodeLabels to process
-      mockEchartsInstance.getOption.mockReturnValue({
-        series: [
-          {
-            data: [
-              { name: 'Portfolio', category: 'main' },
-              { name: 'AIT', category: 'contributor' },
-            ],
-          },
-        ],
-      });
-
-      component['applyChartFormatting']();
-
-      // Fast-forward the timer
-      jest.advanceTimersByTime(100);
-
-      expect(mockEchartsInstance.resize).toHaveBeenCalled();
-      expect(component.onResize).toHaveBeenCalled();
-      expect(component['updateNodeLabels']).toHaveBeenCalled();
-    });
-
-    it('should get zoom level for small widths', () => {
-      const zoom = component['getZoomForWidth'](500, 0.8);
-      expect(zoom).toBe(0.8);
-    });
-
-    it('should get zoom level for large widths', () => {
-      const zoom = component['getZoomForWidth'](1200, 1);
-      expect(zoom).toBe(1);
-    });
+    expect(mockAlignmentService.getPortfolioAlignments).toHaveBeenCalledWith(
+      '3'
+    );
+    expect(component.alignmentData).toEqual(mockAlignments);
   });
 
-  describe('Edge cases and error handling', () => {
-    it('should handle missing chart DOM element gracefully', () => {
-      document.body.innerHTML = '';
-      expect(() => component['initChart']()).not.toThrow();
-    });
+  it('should handle loadAlignmentData with no team structure data', () => {
+    (component as any).teamStructureData = null;
 
-    it('should handle chart resize when chart is null', () => {
-      component['chart'] = null;
-      expect(() => component.onResize()).not.toThrow();
-    });
+    (component as any).loadAlignmentData('Portfolio', '1');
 
-    it('should handle node selection with null team structure data', () => {
-      component['teamStructureData'] = null;
-      expect(() => component['handleNodeSelection']('Portfolio')).not.toThrow();
-    });
-
-    it('should handle empty node data gracefully', () => {
-      mockEchartsInstance.getOption.mockReturnValue({ series: [{ data: [] }] });
-      expect(() => component['updateNodeLabels']()).not.toThrow();
-    });
-
-    it('should handle invalid chart options in getNodesFromOption', () => {
-      const invalidOptions = { invalidStructure: true };
-      const result = component['getNodesFromOption'](invalidOptions);
-      expect(result).toBeNull();
-    });
+    expect(component.alignmentData).toEqual([]);
   });
 
-  describe('Node interaction', () => {
-    beforeEach(() => {
-      component['teamStructureData'] = mockTeamStructureData;
-    });
+  it('should handle createChartOptions with valid team structure data', () => {
+    (component as any).teamStructureData = mockTeamStructureData;
 
-    it('should handle node selection for Portfolio', () => {
-      jest.spyOn(component as any, 'loadAlignmentData');
-      component['handleNodeSelection']('Portfolio');
+    const result = (component as any).createChartOptions(
+      800,
+      400,
+      1,
+      mockChartFonts
+    );
 
-      expect(component.selectedNode).toBe('Portfolio');
-      expect(component['loadAlignmentData']).toHaveBeenCalledWith(
-        'Portfolio',
-        '1'
-      );
-    });
-
-    it('should handle node selection for PDT', () => {
-      jest.spyOn(component as any, 'loadAlignmentData');
-      component['handleNodeSelection']('PDT');
-
-      expect(component.selectedNode).toBe('PDT');
-      expect(component['loadAlignmentData']).toHaveBeenCalledWith('PDT', '2');
-    });
-
-    it('should handle node selection for Team', () => {
-      jest.spyOn(component as any, 'loadAlignmentData');
-      component['handleNodeSelection']('Team');
-
-      expect(component.selectedNode).toBe('Team');
-      expect(component['loadAlignmentData']).toHaveBeenCalledWith('Team', '3');
-    });
-
-    it('should handle contributor node selection', () => {
-      jest.spyOn(component as any, 'loadAlignmentData');
-      component['handleNodeSelection']('AIT');
-
-      expect(component.selectedNode).toBe('AIT');
-      expect(component['loadAlignmentData']).toHaveBeenCalledWith('AIT', '0'); // Contributors use team ID which defaults to '0'
-    });
+    expect(result).toBeDefined();
+    expect(result.series).toBeDefined();
   });
 
-  describe('Additional coverage tests', () => {
-    beforeEach(() => {
-      component['teamStructureData'] = mockTeamStructureData;
-    });
+  it('should call loadTeamStructureData on ngAfterViewInit', fakeAsync(() => {
+    jest
+      .spyOn(component, 'loadTeamStructureData' as any)
+      .mockImplementation(() => {});
 
-    it('should handle ngOnDestroy lifecycle', () => {
-      jest.spyOn(component as any, 'disposeChart');
-      jest.spyOn(component as any, 'unsubscribeAll');
+    component.ngAfterViewInit();
 
-      component.ngOnDestroy();
+    // Wait for the setTimeout to execute
+    tick(0);
 
-      expect(component['disposeChart']).toHaveBeenCalled();
-      expect(component['unsubscribeAll']).toHaveBeenCalled();
-    });
-
-    it('should handle chart initialization with small container width', () => {
-      const chartContainer = document.getElementById('chart');
-      if (chartContainer) {
-        Object.defineProperty(chartContainer, 'offsetWidth', {
-          value: 500,
-          configurable: true,
-        });
-      }
-
-      component['initChart']();
-
-      expect(echarts.init).toHaveBeenCalled();
-      expect(mockEchartsInstance.setOption).toHaveBeenCalled();
-    });
-
-    it('should handle updateNodePositions with different node types', () => {
-      const nodes: NodeData[] = [
-        { name: 'Portfolio', category: 'main', x: 0, y: 0, symbolSize: 70 },
-        { name: 'PDT', category: 'main', x: 0, y: 0, symbolSize: 70 },
-        { name: 'Team', category: 'main', x: 0, y: 0, symbolSize: 70 },
-        { name: 'AIT', category: 'contributor', x: 0, y: 0, symbolSize: 50 },
-        {
-          name: 'Team Backlog',
-          category: 'contributor',
-          x: 0,
-          y: 0,
-          symbolSize: 50,
-        },
-        { name: 'SPK', category: 'contributor', x: 0, y: 0, symbolSize: 50 },
-        {
-          name: 'Jira Board',
-          category: 'contributor',
-          x: 0,
-          y: 0,
-          symbolSize: 50,
-        },
-        {
-          name: 'vertical-junction',
-          category: 'junction',
-          x: 0,
-          y: 0,
-          symbolSize: 1,
-        },
-        {
-          name: 'horizontal-line',
-          category: 'junction',
-          x: 0,
-          y: 0,
-          symbolSize: 1,
-        },
-        { name: 'v1', category: 'connector', x: 0, y: 0, symbolSize: 1 },
-      ];
-
-      component['updateNodePositions'](nodes, 1000, 500, 1, mockChartFonts);
-
-      // Verify main nodes are positioned
-      expect(nodes.find((n) => n.name === 'Portfolio')?.x).toBeGreaterThan(0);
-      expect(nodes.find((n) => n.name === 'PDT')?.x).toBeGreaterThan(0);
-      expect(nodes.find((n) => n.name === 'Team')?.x).toBeGreaterThan(0);
-
-      // Verify contributor nodes are positioned
-      expect(nodes.find((n) => n.name === 'AIT')?.x).toBeGreaterThan(0);
-      expect(nodes.find((n) => n.name === 'Team Backlog')?.x).toBeGreaterThan(
-        0
-      );
-    });
-
-    it('should handle positionNode with different node categories', () => {
-      const mainNode: NodeData = {
-        name: 'Portfolio',
-        category: 'main',
-        x: 0,
-        y: 0,
-        symbolSize: 70,
-      };
-      const contributorNode: NodeData = {
-        name: 'AIT',
-        category: 'contributor',
-        x: 0,
-        y: 0,
-        symbolSize: 50,
-      };
-      const junctionNode: NodeData = {
-        name: 'vertical-junction',
-        category: 'junction',
-        x: 0,
-        y: 0,
-        symbolSize: 1,
-      };
-
-      component['positionNode'](
-        mainNode,
-        100,
-        200,
-        300,
-        250,
-        100,
-        1,
-        mockChartFonts
-      );
-      component['positionNode'](
-        contributorNode,
-        100,
-        200,
-        300,
-        250,
-        100,
-        1,
-        mockChartFonts
-      );
-      component['positionNode'](
-        junctionNode,
-        100,
-        200,
-        300,
-        250,
-        100,
-        1,
-        mockChartFonts
-      );
-
-      expect(mainNode.x).toBeGreaterThan(0);
-      expect(contributorNode.x).toBeGreaterThan(0);
-      // Junction nodes don't get repositioned in positionNode
-    });
-
-    it('should handle formatLongText with exact maxLength', () => {
-      const text = 'Exactly twenty chars';
-      const result = component['formatLongText'](text, 20);
-      expect(result).toBe(text);
-    });
-
-    it('should handle calculateFontSize with very long text', () => {
-      const veryLongText =
-        'This is an extremely long text that should result in a very small font size to ensure it fits properly within the node boundaries';
-      const result = component['calculateFontSize'](veryLongText, 16);
-      expect(result).toBe(13.6); // 16 * 0.85 for text > 15 chars
-    });
-
-    it('should handle calculateFontSize with empty text', () => {
-      const result = component['calculateFontSize']('', 16);
-      expect(result).toBe(16); // Should return base size for empty text
-    });
-
-    it('should handle getNodeIdByType with Team node', () => {
-      const teamId = component['getNodeIdByType']('Team');
-      expect(teamId).toBe('3');
-    });
-
-    it('should handle createChartOptions with different parameters', () => {
-      const options = component['createChartOptions'](
-        800,
-        400,
-        0.8,
-        mockChartFonts
-      );
-
-      expect(options).toBeDefined();
-      expect(options.series[0].type).toBe('graph');
-      expect(options.series[0].layout).toBe('none');
-      expect(options.series[0].roam).toBe(true);
-    });
-
-    it('should handle resetSelectedNode when node is already null', () => {
-      component.selectedNode = null;
-      component.resetSelectedNode();
-      expect(component.selectedNode).toBeNull();
-    });
-
-    it('should handle resetSelectedNode with chart instance', () => {
-      component.selectedNode = 'Portfolio';
-      component['chart'] = mockEchartsInstance;
-
-      mockEchartsInstance.getOption.mockReturnValue({
-        series: [
-          { data: [{ name: 'Portfolio', category: 'main', symbolSize: 80 }] },
-        ],
-      });
-
-      component.resetSelectedNode();
-
-      expect(component.selectedNode).toBeNull();
-      expect(mockEchartsInstance.setOption).toHaveBeenCalled();
-    });
-
-    it('should handle updateNodeLabels with empty chart data', () => {
-      component['chart'] = mockEchartsInstance;
-      mockEchartsInstance.getOption.mockReturnValue({
-        series: [{ data: [] }],
-      });
-
-      expect(() => component['updateNodeLabels']()).not.toThrow();
-    });
-
-    it('should handle loadAlignmentData with empty results', () => {
-      jest.spyOn(alignmentService, 'getAlignments').mockReturnValue([]);
-      jest.spyOn(component as any, 'updateGridView');
-
-      component['loadAlignmentData']('NonExistent', '999');
-
-      expect(component.alignmentData).toEqual([]);
-      expect(component['updateGridView']).toHaveBeenCalled();
-    });
-
-    it('should handle dataStateChange with partial state', () => {
-      const partialState = { skip: 5, take: 10 } as DataStateChangeEvent;
-      component.dataStateChange(partialState);
-
-      expect(component.gridState.skip).toBe(5);
-      expect(component.gridState.take).toBe(10);
-    });
-
-    it('should handle onRowSelect with multiple selected rows', () => {
-      const event = {
-        selectedRows: [{ dataItem: { id: 1 } }, { dataItem: { id: 2 } }],
-      };
-      component.onRowSelect(event as any);
-      expect(component.rowSelected).toBe(true);
-    });
-
-    it('should handle chart resize with null chart instance', () => {
-      component['chart'] = null;
-      expect(() => component.onResize()).not.toThrow();
-    });
-
-    it('should handle applyChartFormatting with setTimeout', () => {
-      component['chart'] = mockEchartsInstance;
-      jest.spyOn(component as any, 'updateNodeLabels');
-      jest.spyOn(component, 'onResize');
-
-      component['applyChartFormatting']();
-
-      // Fast-forward the timer
-      jest.advanceTimersByTime(100);
-
-      expect(mockEchartsInstance.resize).toHaveBeenCalled();
-      expect(component.onResize).toHaveBeenCalled();
-      expect(component['updateNodeLabels']).toHaveBeenCalled();
-    });
-
-    it('should handle getZoomForWidth with different container sizes', () => {
-      expect(component['getZoomForWidth'](500, 0.8)).toBe(0.8);
-      expect(component['getZoomForWidth'](1200, 1.0)).toBe(1.0);
-      expect(component['getZoomForWidth'](750, 0.8)).toBe(0.8); // <= 750 returns 0.8
-    });
-
-    it('should handle updateGridView with different skip/take values', () => {
-      component.alignmentData = mockAlignments;
-      component.gridState.skip = 0;
-      component.gridState.take = 1;
-
-      component['updateGridView']();
-
-      expect(component.gridView.data.length).toBe(1);
-      expect(component.gridView.total).toBe(2);
-    });
-
-    it('should handle updateGridView with skip beyond data length', () => {
-      component.alignmentData = mockAlignments;
-      component.gridState.skip = 10;
-      component.gridState.take = 5;
-
-      component['updateGridView']();
-
-      expect(component.gridView.data.length).toBe(0);
-      expect(component.gridView.total).toBe(2);
-    });
-
-    it('should handle createMainNodeLabel with long title', () => {
-      const longTitle =
-        'This is a very long portfolio title that should be formatted properly';
-      const label = component['createMainNodeLabel'](
-        'Portfolio',
-        longTitle,
-        mockChartFonts
-      );
-
-      expect(label.formatter).toContain('{name|Portfolio}');
-      expect(label.formatter).toContain(longTitle);
-    });
-
-    it('should handle createContributorNodeLabel with zero count', () => {
-      component.nodeDataCounts['AIT'] = 0;
-      const label = component['createContributorNodeLabel'](
-        'AIT',
-        mockChartFonts
-      );
-
-      expect(label.formatter).toContain('{name|AIT}');
-      expect(label.formatter).toContain('{plus|+}'); // When count is 0, it shows plus sign
-    });
-
-    it('should handle formatNodeLabel with different styles', () => {
-      const lightLabel = component['formatNodeLabel'](
-        'Test',
-        'Title',
-        16,
-        true
-      );
-      const darkLabel = component['formatNodeLabel'](
-        'Test',
-        'Title',
-        16,
-        false
-      );
-
-      expect(lightLabel.rich.name.color).toBe('#000000');
-      expect(darkLabel.rich.name.color).toBe('#FFFFFF');
-    });
-  });
+    expect((component as any).loadTeamStructureData).toHaveBeenCalled();
+  }));
 });

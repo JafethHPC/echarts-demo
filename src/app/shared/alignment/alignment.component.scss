@@ -1,95 +1,106 @@
+/* ============================================================================
+   CSS CUSTOM PROPERTIES
+   ============================================================================ */
+
 :host {
   --btn-scale: 1.2;
 }
 
-/* Responsive button scaling - smaller buttons for small screens */
-@media (max-width: 600px) {
-  :host {
-    --btn-scale: 0.85;
-  }
-}
+/* ============================================================================
+   MAIN CONTAINER
+   ============================================================================ */
 
 .alignment-container {
   width: 100%;
-  // margin-top: 20px;
   padding: 0 20px 20px;
   box-sizing: border-box;
+}
 
-  .table-header {
+/* ============================================================================
+   TABLE HEADER & ACTION BUTTONS
+   ============================================================================ */
+
+.table-header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 8px;
+
+  h3 {
+    margin-bottom: 0;
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: #444;
+  }
+
+  .action-buttons {
     display: flex;
-    flex-direction: row;
-    align-items: flex-end;
-    justify-content: space-between;
-    margin-bottom: 8px;
+    gap: 8px;
 
-    h3 {
-      margin-bottom: 0;
-      font-size: 1.2rem;
-      font-weight: 400;
-      color: #444;
-    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-size: calc(0.72rem * var(--btn-scale));
+      padding: calc(6px * var(--btn-scale));
+      border-radius: calc(7px * var(--btn-scale));
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      color: #000;
+      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 
-    .action-buttons {
-      display: flex;
-      gap: 8px;
-
-      .btn {
-        display: inline-flex;
+      .icon-wrapper {
+        display: flex;
         align-items: center;
         justify-content: center;
-        gap: 4px;
-        font-size: calc(0.72rem * var(--btn-scale));
-        padding: calc(6px * var(--btn-scale));
-        border-radius: calc(7px * var(--btn-scale));
-        cursor: pointer;
-        border: 1px solid #ccc;
-        background-color: #fff;
-        color: #000;
-        transition: background-color 0.2s, color 0.2s;
+        height: 100%;
+      }
 
-        .icon-wrapper {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          height: 100%;
-        }
+      mat-icon {
+        font-size: calc(16px * var(--btn-scale));
+        vertical-align: middle;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        width: 100% !important;
+        height: auto;
+      }
+
+      /* Hover states */
+      &:hover:not(:disabled) {
+        background-color: #012169;
+        color: #fff;
+        border-color: #012169;
 
         mat-icon {
-          font-size: calc(16px * var(--btn-scale));
-          vertical-align: middle;
-          line-height: 1;
-          display: inline-flex;
-          align-items: center;
-          width: 100% !important;
-          height: auto;
-        }
-
-        &:hover:not(:disabled) {
-          background-color: #012169;
           color: #fff;
-
-          mat-icon {
-            color: #fff;
-          }
         }
+      }
 
-        &:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-          background-color: #e0e0e0;
+      /* Disabled states */
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background-color: #e0e0e0;
+        color: #666;
+        border-color: #ccc;
+
+        mat-icon {
           color: #666;
-          border-color: #ccc;
-
-          mat-icon {
-            color: #666;
-          }
         }
       }
     }
   }
 }
 
-/* Default button styles */
+/* ============================================================================
+   BUTTON VARIANTS
+   ============================================================================ */
+
+/* Default button styles for all button types */
 .btn-add,
 .btn-manage,
 .btn-export,
@@ -105,25 +116,39 @@
   }
 }
 
-/* Delete button styles when disabled */
-.btn-delete:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  background-color: #e0e0e0 !important;
-  color: #666 !important;
-  border-color: #ccc !important;
+/* Delete button specific styles */
+.btn-delete {
+  /* Disabled state (no row selected) */
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #e0e0e0 !important;
+    color: #666 !important;
+    border-color: #ccc !important;
+  }
 }
 
-/* Delete button styles when row is selected */
+/* Delete button when row is selected */
 .btn-delete-selected {
   background-color: #012169 !important;
   color: #fff !important;
   border-color: #012169 !important;
+
+  /* Hover state for selected delete button */
+  &:hover:not(:disabled) {
+    background-color: #c62828 !important;
+    color: #fff !important;
+    border-color: #c62828 !important;
+  }
 }
 
-/* Delete button styles when row is selected and hovering */
-.btn-delete-selected:hover:not(:disabled) {
-  background-color: #c62828 !important;
-  color: #fff !important;
-  border-color: #c62828 !important;
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+/* Small screens */
+@media (max-width: 600px) {
+  :host {
+    --btn-scale: 0.85;
+  }
 }

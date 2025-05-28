@@ -1,4 +1,7 @@
-import 'jest-preset-angular/setup-jest';
+import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
+
+// Setup zone.js testing environment
+setupZoneTestEnv();
 
 // Global mocks for tests
 Object.defineProperty(window, 'CSS', { value: null });

@@ -1,13 +1,20 @@
 <div class="alignment-container">
+  <!-- Table Header with Title and Action Buttons -->
   <div class="table-header" *ngIf="title">
     <h3>{{ title }}</h3>
+
     <div class="action-buttons" *ngIf="showActionButtons">
+      <!-- Add Button (only for Jira columns) -->
       <ng-container *ngIf="actions.includes('add') && showJiraColumns">
         <button class="btn btn-add" title="Add" (click)="onAddClick()">
           Add
-          <div class="icon-wrapper"><mat-icon>add</mat-icon></div>
+          <div class="icon-wrapper">
+            <mat-icon>add</mat-icon>
+          </div>
         </button>
       </ng-container>
+
+      <!-- Delete Button (only for Jira columns) -->
       <ng-container *ngIf="actions.includes('delete') && showJiraColumns">
         <button
           class="btn btn-delete"
@@ -17,9 +24,13 @@
           (click)="onDeleteClick()"
         >
           Delete
-          <div class="icon-wrapper"><mat-icon>delete</mat-icon></div>
+          <div class="icon-wrapper">
+            <mat-icon>delete</mat-icon>
+          </div>
         </button>
       </ng-container>
+
+      <!-- Manage Columns Button -->
       <ng-container *ngIf="actions.includes('manage')">
         <button
           class="btn btn-manage"
@@ -27,18 +38,25 @@
           (click)="onManageColumnsClick()"
         >
           Manage Columns
-          <div class="icon-wrapper"><mat-icon>settings</mat-icon></div>
+          <div class="icon-wrapper">
+            <mat-icon>settings</mat-icon>
+          </div>
         </button>
       </ng-container>
+
+      <!-- Export Button -->
       <ng-container *ngIf="actions.includes('export')">
         <button class="btn btn-export" title="Export" (click)="onExportClick()">
           Export
-          <div class="icon-wrapper"><mat-icon>download</mat-icon></div>
+          <div class="icon-wrapper">
+            <mat-icon>download</mat-icon>
+          </div>
         </button>
       </ng-container>
     </div>
   </div>
 
+  <!-- Kendo Grid -->
   <kendo-grid
     [data]="data"
     [pageSize]="state.take"
@@ -49,20 +67,18 @@
     [pageable]="true"
     [filterable]="true"
     [selectable]="selectableSettings"
+    [loading]="loading"
     (dataStateChange)="onDataStateChange($event)"
     (selectionChange)="onSelectionChange($event)"
-    [loading]="loading"
   >
-    <kendo-grid-column
-      field="alignToId"
-      title="ID"
-      [filterable]="true"
-    ></kendo-grid-column>
-    <kendo-grid-column
-      field="alignToName"
-      title="Name"
-      [filterable]="true"
-    ></kendo-grid-column>
+    <!-- Standard Columns -->
+    <kendo-grid-column field="alignToId" title="ID" [filterable]="true">
+    </kendo-grid-column>
+
+    <kendo-grid-column field="alignToName" title="Name" [filterable]="true">
+    </kendo-grid-column>
+
+    <!-- Jira-specific Columns -->
     <kendo-grid-column
       *ngIf="showJiraColumns"
       field="jiraInstance"
@@ -70,6 +86,8 @@
       [filterable]="true"
     >
     </kendo-grid-column>
+
+    <!-- Team-specific Columns -->
     <kendo-grid-column
       *ngIf="showTeamColumns"
       field="techManagerName"
@@ -77,6 +95,8 @@
       [filterable]="true"
     >
     </kendo-grid-column>
+
+    <!-- Content Projection for Additional Columns -->
     <ng-content></ng-content>
   </kendo-grid>
 </div>
