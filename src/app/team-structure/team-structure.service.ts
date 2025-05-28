@@ -25,7 +25,8 @@ export class TeamStructureService {
                 type: 'Feature',
                 methodology: 'Scrum',
                 teamTechmgr: 'Emily Chen',
-                teamPOC: 'John Smith',
+                teamPOC:
+                  'John Smithsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
                 children: [
                   { name: 'AIT', count: 5 },
                   { name: 'Team Backlog', count: 32 },
@@ -58,7 +59,8 @@ export class TeamStructureService {
                 type: 'Feature',
                 methodology: 'Scrum',
                 teamTechmgr: 'Emily Chen',
-                teamPOC: 'John Smith',
+                teamPOC:
+                  'John Smithsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss',
                 children: [
                   { name: 'AIT', count: 5 },
                   { name: 'Team Backlog', count: 32 },

@@ -190,20 +190,38 @@ export class TeamStructureConfigService {
         let x = pos[0];
         let y = pos[1];
 
+        // Add offset to avoid cursor overlap
+        const offsetX = 15;
+        const offsetY = 15;
+
         // Prevent tooltip from being cut off on the right
-        if (x + contentWidth > viewWidth) {
-          x = Math.max(0, viewWidth - contentWidth);
+        if (x + contentWidth + offsetX > viewWidth) {
+          x = Math.max(10, viewWidth - contentWidth - 10);
+        } else {
+          x = x + offsetX;
+        }
+
+        // Prevent tooltip from being cut off on the left
+        if (x < 10) {
+          x = 10;
         }
 
         // Prevent tooltip from being cut off at the bottom
-        if (y + contentHeight > viewHeight) {
-          y = Math.max(0, viewHeight - contentHeight);
+        if (y + contentHeight + offsetY > viewHeight) {
+          y = Math.max(10, viewHeight - contentHeight - 10);
+        } else {
+          y = y + offsetY;
+        }
+
+        // Prevent tooltip from being cut off at the top
+        if (y < 10) {
+          y = 10;
         }
 
         return [x, y];
       },
       extraCssText:
-        'box-shadow: 0 0 8px 0 rgba(0,0,0,0.6); border-radius: 10px;',
+        'box-shadow: 0 0 8px 0 rgba(0,0,0,0.6); border-radius: 10px; max-width: none !important; word-wrap: break-word; overflow: hidden;',
       formatter: (params: { data: any }) => {
         const data = params.data;
         let content = '';
@@ -220,18 +238,40 @@ export class TeamStructureConfigService {
         const padding = 8;
 
         // Helper function to wrap text if needed
-        const wrapText = (text: string, maxLength: number): string => {
-          if (text.length <= maxLength) return text;
+        const wrapText = (
+          text: string | null | undefined,
+          maxLength: number
+        ): string => {
+          if (!text) return '';
+          const textStr = String(text);
+          if (textStr.length <= maxLength) return textStr;
 
           // Find a good break point
-          const words = text.split(' ');
-          if (words.length === 1) return text; // Single word, don't break
+          const words = textStr.split(' ');
+          if (words.length === 1) {
+            // Single word, break it if too long
+            if (textStr.length > maxLength) {
+              return textStr.substring(0, maxLength - 3) + '...';
+            }
+            return textStr;
+          }
 
           const midPoint = Math.floor(words.length / 2);
           const firstHalf = words.slice(0, midPoint).join(' ');
           const secondHalf = words.slice(midPoint).join(' ');
 
           return `${firstHalf}<br/>${secondHalf}`;
+        };
+
+        // Helper function to truncate text if it's too long
+        const truncateText = (
+          text: string | null | undefined,
+          maxLength: number
+        ): string => {
+          if (!text) return '';
+          const textStr = String(text);
+          if (textStr.length <= maxLength) return textStr;
+          return textStr.substring(0, maxLength - 3) + '...';
         };
 
         if (data.category === 'portfolio') {
@@ -241,18 +281,22 @@ export class TeamStructureConfigService {
             : teamStructureData;
           const portfolioName = firstPortfolio?.portfolioName ?? '';
           const wrappedName = wrapText(portfolioName, 25);
+          const portfolioId = truncateText(
+            firstPortfolio?.portfolioId ?? '',
+            30
+          );
+          const portfolioMgr = truncateText(
+            firstPortfolio?.portfolioTechMgr ?? '',
+            30
+          );
 
           content = `
-            <div style="background: #E0E0E0; color: #000; padding: ${padding}px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px; line-height: 1.3;">
+            <div style="background: #E0E0E0; color: #000; padding: ${padding}px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px; line-height: 1.3; word-wrap: break-word; overflow-wrap: break-word;">
               ${wrappedName}
             </div>
-            <div style="background: #fff; padding: ${padding}px; font-size: ${bodyFont}px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
-              Portfolio ID<br><span style='color:#888;'>${
-                firstPortfolio?.portfolioId ?? ''
-              }</span><br>
-              Manager<br><span style='color:#888;'>${
-                firstPortfolio?.portfolioTechMgr ?? ''
-              }</span>
+            <div style="background: #fff; padding: ${padding}px; font-size: ${bodyFont}px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; word-wrap: break-word; overflow-wrap: break-word;">
+              Portfolio ID<br><span style='color:#888; word-wrap: break-word; overflow-wrap: break-word;'>${portfolioId}</span><br>
+              Manager<br><span style='color:#888; word-wrap: break-word; overflow-wrap: break-word;'>${portfolioMgr}</span>
             </div>
           `;
         } else if (data.category === 'pdt') {
@@ -263,18 +307,16 @@ export class TeamStructureConfigService {
           const pdtData = firstPortfolio?.children?.[0] ?? {};
           const pdtName = pdtData?.pdtname ?? '';
           const wrappedName = wrapText(pdtName, 25);
+          const pdtId = truncateText(pdtData?.pdtid ?? '', 30);
+          const pdtMgr = truncateText(pdtData?.pdtTechMgr ?? '', 30);
 
           content = `
-            <div style="background: #C62828; color: #fff; padding: ${padding}px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px; line-height: 1.3;">
+            <div style="background: #C62828; color: #fff; padding: ${padding}px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px; line-height: 1.3; word-wrap: break-word; overflow-wrap: break-word;">
               ${wrappedName}
             </div>
-            <div style="background: #fff; padding: ${padding}px; font-size: ${bodyFont}px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
-              PDT ID<br><span style='color:#888;'>${
-                pdtData?.pdtid ?? ''
-              }</span><br>
-              PDT Manager<br><span style='color:#888;'>${
-                pdtData?.pdtTechMgr ?? ''
-              }</span>
+            <div style="background: #fff; padding: ${padding}px; font-size: ${bodyFont}px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; word-wrap: break-word; overflow-wrap: break-word;">
+              PDT ID<br><span style='color:#888; word-wrap: break-word; overflow-wrap: break-word;'>${pdtId}</span><br>
+              PDT Manager<br><span style='color:#888; word-wrap: break-word; overflow-wrap: break-word;'>${pdtMgr}</span>
             </div>
           `;
         } else if (data.category === 'team') {
@@ -285,32 +327,27 @@ export class TeamStructureConfigService {
           const teamData = firstPortfolio?.children?.[0]?.children?.[0] ?? {};
           const teamName = teamData?.teamName ?? '';
           const wrappedName = wrapText(teamName, 25);
+          const teamId = truncateText(teamData?.teamId ?? '', 30);
+          const teamType = truncateText(teamData?.type ?? '', 30);
+          const methodology = truncateText(teamData?.methodology ?? '', 30);
+          const teamMgr = truncateText(teamData?.teamTechmgr ?? '', 30);
+          const teamPOC = truncateText(teamData?.teamPOC ?? '', 30);
 
           content = `
-            <div style="background: #012169; color: #fff; padding: ${padding}px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px; line-height: 1.3;">
+            <div style="background: #012169; color: #fff; padding: ${padding}px; font-weight: normal; font-size: ${titleFont}px; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px; line-height: 1.3; word-wrap: break-word; overflow-wrap: break-word;">
               ${wrappedName}
             </div>
-            <div style="background: #fff; padding: ${padding}px; font-size: ${bodyFont}px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
-              Team ID<br><span style='color:#888;'>${
-                teamData?.teamId ?? ''
-              }</span><br>
-              Team Type<br><span style='color:#888;'>${
-                teamData?.type ?? ''
-              }</span><br>
-              Methodology<br><span style='color:#888;'>${
-                teamData?.methodology ?? ''
-              }</span><br>
-              Team Manager<br><span style='color:#888;'>${
-                teamData?.teamTechmgr ?? ''
-              }</span><br>
-              Team POC<br><span style='color:#888;'>${
-                teamData?.teamPOC ?? ''
-              }</span>
+            <div style="background: #fff; padding: ${padding}px; font-size: ${bodyFont}px; color: #000000; text-align: left; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; word-wrap: break-word; overflow-wrap: break-word;">
+              Team ID<br><span style='color:#888; word-wrap: break-word; overflow-wrap: break-word;'>${teamId}</span><br>
+              Team Type<br><span style='color:#888; word-wrap: break-word; overflow-wrap: break-word;'>${teamType}</span><br>
+              Methodology<br><span style='color:#888; word-wrap: break-word; overflow-wrap: break-word;'>${methodology}</span><br>
+              Team Manager<br><span style='color:#888; word-wrap: break-word; overflow-wrap: break-word;'>${teamMgr}</span><br>
+              Team POC<br><span style='color:#888; word-wrap: break-word; overflow-wrap: break-word;'>${teamPOC}</span>
             </div>
           `;
         }
 
-        return `<div style="background: transparent; border-radius: 10px; width: ${width}px; overflow: visible; box-shadow: none; max-width: 100%;">${content}</div>`;
+        return `<div style="background: transparent; border-radius: 10px; width: ${width}px; max-width: ${width}px; min-width: ${width}px; overflow: hidden; box-shadow: none; word-wrap: break-word; overflow-wrap: break-word;">${content}</div>`;
       },
     };
   }
