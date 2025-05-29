@@ -18,8 +18,26 @@
   <div id="chart"></div>
 </div>
 
-<!-- Alignments Grid -->
-<div class="alignments-container" *ngIf="selectedNode">
+<!-- Team Details Grid (shown when Team node is selected) -->
+<div class="team-details-container" *ngIf="selectedNode === 'Team' && teamData">
+  <app-team-table
+    [title]="selectedNode + ' Details'"
+    [teamData]="teamData"
+    [state]="teamGridState"
+    [selectableSettings]="selectableSettings"
+    [loading]="false"
+    [rowSelected]="rowSelected"
+    [scale]="getCurrentScale()"
+    (dataStateChange)="teamDataStateChange($event)"
+    (selectionChange)="onTeamRowSelect($event)"
+  ></app-team-table>
+</div>
+
+<!-- Alignments Grid (shown for all other nodes) -->
+<div
+  class="alignments-container"
+  *ngIf="selectedNode && selectedNode !== 'Team'"
+>
   <app-alignment
     [title]="selectedNode + ' Details'"
     [data]="gridView"

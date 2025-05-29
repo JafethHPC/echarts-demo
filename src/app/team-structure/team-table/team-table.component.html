@@ -1,0 +1,63 @@
+<div class="team-table-container">
+  <!-- Table Header with Title and Action Buttons -->
+  <div class="table-header" *ngIf="title">
+    <h3>{{ title }}</h3>
+
+    <div class="action-buttons" *ngIf="showActionButtons">
+      <!-- Manage Columns Button -->
+      <ng-container *ngIf="actions.includes('manage')">
+        <button
+          class="btn btn-manage"
+          title="Manage Columns"
+          (click)="onManageColumnsClick()"
+        >
+          Manage Columns
+          <div class="icon-wrapper">
+            <mat-icon>settings</mat-icon>
+          </div>
+        </button>
+      </ng-container>
+
+      <!-- Export Button -->
+      <ng-container *ngIf="actions.includes('export')">
+        <button class="btn btn-export" title="Export" (click)="onExportClick()">
+          Export
+          <div class="icon-wrapper">
+            <mat-icon>download</mat-icon>
+          </div>
+        </button>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Kendo Grid -->
+  <kendo-grid
+    [data]="gridView"
+    [pageSize]="state.take"
+    [skip]="state.skip"
+    [sort]="state.sort"
+    [filter]="state.filter"
+    [sortable]="true"
+    [pageable]="true"
+    [filterable]="true"
+    [selectable]="selectableSettings"
+    [loading]="loading"
+    (dataStateChange)="onDataStateChange($event)"
+    (selectionChange)="onSelectionChange($event)"
+  >
+    <!-- Team ID Column -->
+    <kendo-grid-column field="teamId" title="Team ID" [filterable]="true">
+    </kendo-grid-column>
+
+    <!-- Team Name Column -->
+    <kendo-grid-column field="teamName" title="Team Name" [filterable]="true">
+    </kendo-grid-column>
+
+    <!-- Team Type Column -->
+    <kendo-grid-column field="teamType" title="Team Type" [filterable]="true">
+    </kendo-grid-column>
+
+    <!-- Content Projection for Additional Columns -->
+    <ng-content></ng-content>
+  </kendo-grid>
+</div>

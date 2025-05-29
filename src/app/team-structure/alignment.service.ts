@@ -18,6 +18,12 @@ export interface Alignment {
   techManagerNbk: string;
 }
 
+export interface Team {
+  teamId: string;
+  teamName: string;
+  teamType: string;
+}
+
 export type AlignmentType =
   | 'TEAMTOAIT'
   | 'TEAMTOTPK'
@@ -393,5 +399,39 @@ export class AlignmentService {
     }
 
     return [];
+  }
+
+  /**
+   * Get team details by team ID
+   * @param teamId - The team ID to retrieve details for
+   * @returns Team object with teamId, teamName, and teamType
+   */
+  getTeamAlignment(teamId: string): Team {
+    // Mock team data - in real implementation this would come from an API
+    const mockTeamData: { [key: string]: Team } = {
+      '301': {
+        teamId: '301',
+        teamName: 'Mobile Apps',
+        teamType: 'Development',
+      },
+      '302': {
+        teamId: '302',
+        teamName: 'Web Platform',
+        teamType: 'Development',
+      },
+      '303': {
+        teamId: '303',
+        teamName: 'Data Analytics',
+        teamType: 'Analytics',
+      },
+    };
+
+    return (
+      mockTeamData[teamId] || {
+        teamId: teamId,
+        teamName: 'Unknown Team',
+        teamType: 'Unknown',
+      }
+    );
   }
 }

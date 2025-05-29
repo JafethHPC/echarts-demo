@@ -20,6 +20,7 @@ import {
   AlignmentService,
   Alignment,
   AlignmentType,
+  Team,
 } from './alignment.service';
 import {
   GridDataResult,
@@ -85,6 +86,18 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
   public selectableSettings: SelectableSettings = {
     checkboxOnly: false,
     mode: 'single',
+  };
+
+  // ============================================================================
+  // TEAM PROPERTIES
+  // ============================================================================
+
+  teamData: Team | null = null;
+  public teamGridState: State = {
+    sort: [],
+    skip: 0,
+    take: 10,
+    filter: { logic: 'and', filters: [] },
   };
 
   // ============================================================================
@@ -293,7 +306,12 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
     this.selectedNode = nodeName;
     const nodeId = this.getNodeIdByType(nodeName);
 
-    this.loadAlignmentData(nodeName, nodeId);
+    if (nodeName === 'Team') {
+      this.loadTeamData(nodeId);
+    } else {
+      this.loadAlignmentData(nodeName, nodeId);
+    }
+
     this.updateNodeSizes(nodeName);
     this.updateNodeLabels();
 
@@ -490,6 +508,7 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
   public resetSelectedNode(): void {
     this.selectedNode = null;
     this.alignmentData = [];
+    this.teamData = null;
     this.gridView = { data: [], total: 0 };
     this.rowSelected = false;
 
@@ -613,12 +632,23 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
   // GRID FUNCTIONALITY
   // ============================================================================
 
+  private loadTeamData(teamId: string): void {
+    this.teamData = this.alignmentService.getTeamAlignment(teamId);
+    // Clear alignment data when showing team data
+    this.alignmentData = [];
+    this.updateGridView();
+  }
+
   private loadAlignmentData(nodeName: string, nodeId: string): void {
     if (!this.teamStructureData?.length) {
       this.alignmentData = [];
+      this.teamData = null;
       this.updateGridView();
       return;
     }
+
+    // Clear team data when showing alignment data
+    this.teamData = null;
 
     const teamId =
       this.teamStructureData[0]?.children?.[0]?.children?.[0]?.teamId?.toString() ||
@@ -680,6 +710,20 @@ export class TeamStructureComponent implements AfterViewInit, OnDestroy {
   }
 
   public onRowSelect(event: SelectionEvent): void {
+    this.rowSelected = !!event.selectedRows?.length;
+    this.changeDetectorRef.markForCheck();
+  }
+
+  // ============================================================================
+  // TEAM GRID EVENT HANDLERS
+  // ============================================================================
+
+  public teamDataStateChange(state: DataStateChangeEvent): void {
+    this.teamGridState = state;
+    this.changeDetectorRef.markForCheck();
+  }
+
+  public onTeamRowSelect(event: SelectionEvent): void {
     this.rowSelected = !!event.selectedRows?.length;
     this.changeDetectorRef.markForCheck();
   }

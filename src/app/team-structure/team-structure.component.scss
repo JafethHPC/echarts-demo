@@ -96,8 +96,6 @@
 
 .alignments-container {
   width: 100%;
-  margin-top: 20px;
-  padding: 0 20px 20px;
   box-sizing: border-box;
 
   h3 {
@@ -116,6 +114,22 @@
     text-align: center;
     color: #666;
     font-size: 0.9rem;
+  }
+}
+
+/* ============================================================================
+   TEAM DETAILS CONTAINER
+   ============================================================================ */
+
+.team-details-container {
+  width: 100%;
+  box-sizing: border-box;
+
+  h3 {
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    color: #333;
+    font-weight: 500;
   }
 }
 
@@ -182,9 +196,8 @@
 @media (max-width: 930px) {
   // Heights are now managed dynamically by TypeScript
 
-  .alignments-container {
-    padding: 0 10px 10px;
-
+  .alignments-container,
+  .team-details-container {
     h3 {
       font-size: 1.1rem;
     }

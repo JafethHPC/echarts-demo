@@ -5,10 +5,18 @@ import { TeamStructureComponent } from './team-structure.component';
 import { TeamStructureService } from './team-structure.service';
 import { GridModule } from '@progress/kendo-angular-grid';
 import { AlignmentModule } from '../shared/alignment';
+import { MatIconModule } from '@angular/material/icon';
+import { TeamTableComponent } from './team-table/team-table.component';
 
 @NgModule({
-  declarations: [TeamStructureComponent],
-  imports: [CommonModule, FormsModule, GridModule, AlignmentModule],
+  declarations: [TeamStructureComponent, TeamTableComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    GridModule,
+    AlignmentModule,
+    MatIconModule,
+  ],
   exports: [TeamStructureComponent],
   providers: [TeamStructureService],
 })
