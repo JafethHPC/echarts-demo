@@ -18,6 +18,13 @@
       >
         Team Structure
       </button>
+      <button
+        class="tab-button"
+        [class.active]="activeTab === 'pdt-structure'"
+        (click)="setActiveTab('pdt-structure')"
+      >
+        PDT Structure
+      </button>
     </div>
   </div>
 
@@ -29,5 +36,10 @@
   <!-- Team Structure Component -->
   <div *ngIf="activeTab === 'team-structure'">
     <app-team-structure></app-team-structure>
+  </div>
+
+  <!-- PDT Structure Component -->
+  <div *ngIf="activeTab === 'pdt-structure'">
+    <app-pdt-structure></app-pdt-structure>
   </div>
 </div>

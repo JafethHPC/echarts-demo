@@ -19,7 +19,7 @@ describe('AppComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have tree-diagram as default active tab', () => {
+  it('should have team-structure as default active tab', () => {
     expect(component.activeTab).toEqual('team-structure');
   });
 
@@ -32,5 +32,13 @@ describe('AppComponent', () => {
 
     // Assert
     expect(component.activeTab).toEqual('world-map');
+  });
+
+  it('should change to pdt-structure tab', () => {
+    // Act
+    component.setActiveTab('pdt-structure');
+
+    // Assert
+    expect(component.activeTab).toEqual('pdt-structure');
   });
 });

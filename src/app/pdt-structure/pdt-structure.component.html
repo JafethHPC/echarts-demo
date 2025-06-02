@@ -1,0 +1,75 @@
+<!-- Main chart container -->
+<div class="chart-container">
+  <div class="legend-container">
+    <div class="legend-item">
+      <span class="legend-circle" style="background: #e0e0e0"></span> Portfolio
+    </div>
+    <div class="legend-item">
+      <span class="legend-circle" style="background: #c62828"></span> PDT
+    </div>
+    <div class="legend-item">
+      <span class="legend-circle" style="background: #012169"></span> Team
+    </div>
+    <div class="legend-item">
+      <span
+        class="legend-circle"
+        style="background: #ffffff; border: 2px solid #000000"
+      ></span>
+      Product
+    </div>
+  </div>
+  <div id="pdt-chart"></div>
+</div>
+
+<!-- PDT Details (shown when PDT node is selected) -->
+<div class="pdt-details-container" *ngIf="selectedNode === 'PDT'">
+  <div class="details-content">
+    <h3>{{ selectedNode }} Details</h3>
+    <div class="node-counts">
+      <div class="count-item">
+        <span class="count-label">Products</span>
+        <span class="count-value">{{ nodeDataCounts["Product"] || 0 }}</span>
+      </div>
+      <div class="count-item">
+        <span class="count-label">Teams</span>
+        <span class="count-value">{{ nodeDataCounts["Team"] || 0 }}</span>
+      </div>
+      <div class="count-item">
+        <span class="count-label">Portfolio</span>
+        <span class="count-value">{{ portfolioCount }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Product Details (shown when Product node is selected) -->
+<div
+  class="product-details-container"
+  *ngIf="selectedNode && selectedNode.startsWith('Product')"
+>
+  <div class="details-content">
+    <h3>{{ selectedNode }} Details</h3>
+    <div class="no-data-message">Product details would be displayed here.</div>
+  </div>
+</div>
+
+<!-- Team Details (shown when Team node is selected) -->
+<div
+  class="team-details-container"
+  *ngIf="selectedNode && selectedNode.startsWith('Team')"
+>
+  <div class="details-content">
+    <h3>{{ selectedNode }} Details</h3>
+    <div class="no-data-message">Team details would be displayed here.</div>
+  </div>
+</div>
+
+<!-- Portfolio Details (shown when Portfolio node is selected) -->
+<div class="portfolio-details-container" *ngIf="selectedNode === 'Portfolio'">
+  <div class="details-content">
+    <h3>{{ selectedNode }} Details</h3>
+    <div class="no-data-message">
+      Portfolio details would be displayed here.
+    </div>
+  </div>
+</div>

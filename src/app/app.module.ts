@@ -11,6 +11,7 @@ import { AppComponent } from './app.component';
 import { routes } from './app.routes';
 import { TeamStructureModule } from './team-structure/team-structure.module';
 import { TeamDemographicsModule } from './team-demographics/team-demographics.module';
+import { PdtStructureModule } from './pdt-structure/pdt-structure.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -26,6 +27,7 @@ import { TeamDemographicsModule } from './team-demographics/team-demographics.mo
     }),
     TeamStructureModule,
     TeamDemographicsModule,
+    PdtStructureModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

@@ -1,0 +1,126 @@
+/* ============================================================================
+   CSS CUSTOM PROPERTIES
+   ============================================================================ */
+
+:host {
+  --btn-scale: 1.2;
+}
+
+/* ============================================================================
+   MAIN CONTAINER
+   ============================================================================ */
+
+.pdt-table-container {
+  width: 100%;
+  padding: 0 20px 20px;
+  box-sizing: border-box;
+}
+
+/* ============================================================================
+   TABLE HEADER & ACTION BUTTONS
+   ============================================================================ */
+
+.table-header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 8px;
+
+  h3 {
+    margin-bottom: 0;
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: #444;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 8px;
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-size: calc(0.72rem * var(--btn-scale));
+      padding: calc(6px * var(--btn-scale));
+      border-radius: calc(7px * var(--btn-scale));
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      color: #000;
+      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+
+      .icon-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+      }
+
+      mat-icon {
+        font-size: calc(16px * var(--btn-scale));
+        vertical-align: middle;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        width: 100% !important;
+        height: auto;
+      }
+
+      /* Hover states */
+      &:hover:not(:disabled) {
+        background-color: #012169;
+        color: #fff;
+        border-color: #012169;
+
+        mat-icon {
+          color: #fff;
+        }
+      }
+
+      /* Disabled states */
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background-color: #e0e0e0;
+        color: #666;
+        border-color: #ccc;
+
+        mat-icon {
+          color: #666;
+        }
+      }
+    }
+  }
+}
+
+/* ============================================================================
+   BUTTON VARIANTS
+   ============================================================================ */
+
+/* Only the button styles we actually use */
+.btn-manage,
+.btn-export {
+  background-color: #fff;
+  color: #000;
+  border: 1px solid #ccc;
+
+  &:hover:not(:disabled) {
+    background-color: #012169;
+    color: #fff;
+    border-color: #012169;
+  }
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+/* Small screens */
+@media (max-width: 600px) {
+  :host {
+    --btn-scale: 0.85;
+  }
+}

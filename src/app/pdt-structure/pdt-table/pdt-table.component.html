@@ -1,0 +1,85 @@
+<div class="pdt-table-container">
+  <!-- Table Header with Title and Action Buttons -->
+  <div class="table-header" *ngIf="title">
+    <h3>{{ title }}</h3>
+
+    <div class="action-buttons" *ngIf="showActionButtons">
+      <!-- Manage Columns Button -->
+      <ng-container *ngIf="actions.includes('manage')">
+        <button
+          class="btn btn-manage"
+          title="Manage Columns"
+          (click)="onManageColumnsClick()"
+        >
+          Manage Columns
+          <div class="icon-wrapper">
+            <mat-icon>settings</mat-icon>
+          </div>
+        </button>
+      </ng-container>
+
+      <!-- Export Button -->
+      <ng-container *ngIf="actions.includes('export')">
+        <button class="btn btn-export" title="Export" (click)="onExportClick()">
+          Export
+          <div class="icon-wrapper">
+            <mat-icon>download</mat-icon>
+          </div>
+        </button>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Kendo Grid -->
+  <kendo-grid
+    [data]="gridView"
+    [pageSize]="state.take"
+    [skip]="state.skip"
+    [sort]="state.sort"
+    [filter]="state.filter"
+    [sortable]="true"
+    [pageable]="true"
+    [filterable]="true"
+    [selectable]="selectableSettings"
+    [loading]="loading"
+    (dataStateChange)="onDataStateChange($event)"
+    (selectionChange)="onSelectionChange($event)"
+  >
+    <!-- PDT ID Column -->
+    <kendo-grid-column field="pdtId" title="PDT ID" [filterable]="true">
+    </kendo-grid-column>
+
+    <!-- PDT Name Column -->
+    <kendo-grid-column field="pdtName" title="PDT Name" [filterable]="true">
+    </kendo-grid-column>
+
+    <!-- PDT Tech Manager Column -->
+    <kendo-grid-column
+      field="pdtTechMgr"
+      title="Tech Manager"
+      [filterable]="true"
+    >
+    </kendo-grid-column>
+
+    <!-- Products Count Column -->
+    <kendo-grid-column
+      field="products.length"
+      title="Products"
+      [filterable]="false"
+    >
+      <ng-template kendoGridCellTemplate let-dataItem>
+        {{ dataItem.products?.length || 0 }}
+      </ng-template>
+    </kendo-grid-column>
+
+    <!-- Teams Count Column -->
+    <kendo-grid-column field="teams.length" title="Teams" [filterable]="false">
+      <ng-template kendoGridCellTemplate let-dataItem>
+        {{ dataItem.teams?.length || 0 }}
+      </ng-template>
+    </kendo-grid-column>
+
+    <!-- Content Projection for Additional Columns -->
+    <ng-content></ng-content>
+  </kendo-grid>
+</div>
