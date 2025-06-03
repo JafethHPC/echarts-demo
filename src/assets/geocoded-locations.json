@@ -1,0 +1,354 @@
+{
+  "metadata": {
+    "total_locations": 32,
+    "successful_geocodes": 32,
+    "failed_geocodes": 0,
+    "generated_at": "2024-01-15T10:30:00.000Z"
+  },
+  "locations": {
+    "charlotte|nc|united states": {
+      "city": "Charlotte",
+      "state": "NC",
+      "country": "United States",
+      "latitude": 35.2271,
+      "longitude": -80.8431,
+      "display_name": "Charlotte, North Carolina, United States"
+    },
+    "durham|nc|united states": {
+      "city": "Durham",
+      "state": "NC",
+      "country": "United States",
+      "latitude": 35.994,
+      "longitude": -78.8986,
+      "display_name": "Durham, North Carolina, United States"
+    },
+    "raleigh|nc|united states": {
+      "city": "Raleigh",
+      "state": "NC",
+      "country": "United States",
+      "latitude": 35.7796,
+      "longitude": -78.6382,
+      "display_name": "Raleigh, North Carolina, United States"
+    },
+    "new york|ny|united states": {
+      "city": "New York",
+      "state": "NY",
+      "country": "United States",
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "display_name": "New York, New York, United States"
+    },
+    "buffalo|ny|united states": {
+      "city": "Buffalo",
+      "state": "NY",
+      "country": "United States",
+      "latitude": 42.8864,
+      "longitude": -78.8784,
+      "display_name": "Buffalo, New York, United States"
+    },
+    "london||united kingdom": {
+      "city": "London",
+      "state": "",
+      "country": "United Kingdom",
+      "latitude": 51.5074,
+      "longitude": -0.1278,
+      "display_name": "London, England, United Kingdom"
+    },
+    "manchester||united kingdom": {
+      "city": "Manchester",
+      "state": "",
+      "country": "United Kingdom",
+      "latitude": 53.4808,
+      "longitude": -2.2426,
+      "display_name": "Manchester, England, United Kingdom"
+    },
+    "birmingham||united kingdom": {
+      "city": "Birmingham",
+      "state": "",
+      "country": "United Kingdom",
+      "latitude": 52.4862,
+      "longitude": -1.8904,
+      "display_name": "Birmingham, England, United Kingdom"
+    },
+    "edinburgh||united kingdom": {
+      "city": "Edinburgh",
+      "state": "",
+      "country": "United Kingdom",
+      "latitude": 55.9533,
+      "longitude": -3.1883,
+      "display_name": "Edinburgh, Scotland, United Kingdom"
+    },
+    "bristol||united kingdom": {
+      "city": "Bristol",
+      "state": "",
+      "country": "United Kingdom",
+      "latitude": 51.4545,
+      "longitude": -2.5879,
+      "display_name": "Bristol, England, United Kingdom"
+    },
+    "madrid||spain": {
+      "city": "Madrid",
+      "state": "",
+      "country": "Spain",
+      "latitude": 40.4168,
+      "longitude": -3.7038,
+      "display_name": "Madrid, Community of Madrid, Spain"
+    },
+    "barcelona||spain": {
+      "city": "Barcelona",
+      "state": "",
+      "country": "Spain",
+      "latitude": 41.3851,
+      "longitude": 2.1734,
+      "display_name": "Barcelona, Catalonia, Spain"
+    },
+    "seville||spain": {
+      "city": "Seville",
+      "state": "",
+      "country": "Spain",
+      "latitude": 37.3891,
+      "longitude": -5.9845,
+      "display_name": "Seville, Andalusia, Spain"
+    },
+    "valencia||spain": {
+      "city": "Valencia",
+      "state": "",
+      "country": "Spain",
+      "latitude": 39.4699,
+      "longitude": -0.3763,
+      "display_name": "Valencia, Valencian Community, Spain"
+    },
+    "paris||france": {
+      "city": "Paris",
+      "state": "",
+      "country": "France",
+      "latitude": 48.8566,
+      "longitude": 2.3522,
+      "display_name": "Paris, Île-de-France, France"
+    },
+    "lyon||france": {
+      "city": "Lyon",
+      "state": "",
+      "country": "France",
+      "latitude": 45.764,
+      "longitude": 4.8357,
+      "display_name": "Lyon, Auvergne-Rhône-Alpes, France"
+    },
+    "marseille||france": {
+      "city": "Marseille",
+      "state": "",
+      "country": "France",
+      "latitude": 43.2965,
+      "longitude": 5.3698,
+      "display_name": "Marseille, Provence-Alpes-Côte d'Azur, France"
+    },
+    "bordeaux||france": {
+      "city": "Bordeaux",
+      "state": "",
+      "country": "France",
+      "latitude": 44.8378,
+      "longitude": -0.5792,
+      "display_name": "Bordeaux, Nouvelle-Aquitaine, France"
+    },
+    "berlin||germany": {
+      "city": "Berlin",
+      "state": "",
+      "country": "Germany",
+      "latitude": 52.52,
+      "longitude": 13.405,
+      "display_name": "Berlin, Germany"
+    },
+    "munich||germany": {
+      "city": "Munich",
+      "state": "",
+      "country": "Germany",
+      "latitude": 48.1351,
+      "longitude": 11.582,
+      "display_name": "Munich, Bavaria, Germany"
+    },
+    "hamburg||germany": {
+      "city": "Hamburg",
+      "state": "",
+      "country": "Germany",
+      "latitude": 53.5511,
+      "longitude": 9.9937,
+      "display_name": "Hamburg, Germany"
+    },
+    "cologne||germany": {
+      "city": "Cologne",
+      "state": "",
+      "country": "Germany",
+      "latitude": 50.9375,
+      "longitude": 6.9603,
+      "display_name": "Cologne, North Rhine-Westphalia, Germany"
+    },
+    "tokyo||japan": {
+      "city": "Tokyo",
+      "state": "",
+      "country": "Japan",
+      "latitude": 35.6762,
+      "longitude": 139.6503,
+      "display_name": "Tokyo, Japan"
+    },
+    "osaka||japan": {
+      "city": "Osaka",
+      "state": "",
+      "country": "Japan",
+      "latitude": 34.6937,
+      "longitude": 135.5023,
+      "display_name": "Osaka, Osaka Prefecture, Japan"
+    },
+    "fukuoka||japan": {
+      "city": "Fukuoka",
+      "state": "",
+      "country": "Japan",
+      "latitude": 33.5904,
+      "longitude": 130.4017,
+      "display_name": "Fukuoka, Fukuoka Prefecture, Japan"
+    },
+    "kyoto||japan": {
+      "city": "Kyoto",
+      "state": "",
+      "country": "Japan",
+      "latitude": 35.0116,
+      "longitude": 135.7681,
+      "display_name": "Kyoto, Kyoto Prefecture, Japan"
+    },
+    "bangalore||india": {
+      "city": "Bangalore",
+      "state": "",
+      "country": "India",
+      "latitude": 12.9716,
+      "longitude": 77.5946,
+      "display_name": "Bangalore, Karnataka, India"
+    },
+    "mumbai||india": {
+      "city": "Mumbai",
+      "state": "",
+      "country": "India",
+      "latitude": 19.076,
+      "longitude": 72.8777,
+      "display_name": "Mumbai, Maharashtra, India"
+    },
+    "delhi||india": {
+      "city": "Delhi",
+      "state": "",
+      "country": "India",
+      "latitude": 28.7041,
+      "longitude": 77.1025,
+      "display_name": "Delhi, India"
+    },
+    "hyderabad||india": {
+      "city": "Hyderabad",
+      "state": "",
+      "country": "India",
+      "latitude": 17.385,
+      "longitude": 78.4867,
+      "display_name": "Hyderabad, Telangana, India"
+    },
+    "chennai||india": {
+      "city": "Chennai",
+      "state": "",
+      "country": "India",
+      "latitude": 13.0827,
+      "longitude": 80.2707,
+      "display_name": "Chennai, Tamil Nadu, India"
+    },
+    "pune||india": {
+      "city": "Pune",
+      "state": "",
+      "country": "India",
+      "latitude": 18.5204,
+      "longitude": 73.8567,
+      "display_name": "Pune, Maharashtra, India"
+    },
+    "shanghai||china": {
+      "city": "Shanghai",
+      "state": "",
+      "country": "China",
+      "latitude": 31.2304,
+      "longitude": 121.4737,
+      "display_name": "Shanghai, China"
+    },
+    "beijing||china": {
+      "city": "Beijing",
+      "state": "",
+      "country": "China",
+      "latitude": 39.9042,
+      "longitude": 116.4074,
+      "display_name": "Beijing, China"
+    },
+    "shenzhen||china": {
+      "city": "Shenzhen",
+      "state": "",
+      "country": "China",
+      "latitude": 22.5431,
+      "longitude": 114.0579,
+      "display_name": "Shenzhen, Guangdong, China"
+    },
+    "guangzhou||china": {
+      "city": "Guangzhou",
+      "state": "",
+      "country": "China",
+      "latitude": 23.1291,
+      "longitude": 113.2644,
+      "display_name": "Guangzhou, Guangdong, China"
+    },
+    "chengdu||china": {
+      "city": "Chengdu",
+      "state": "",
+      "country": "China",
+      "latitude": 30.5723,
+      "longitude": 104.0665,
+      "display_name": "Chengdu, Sichuan, China"
+    },
+    "austin|tx|united states": {
+      "city": "Austin",
+      "state": "TX",
+      "country": "United States",
+      "latitude": 30.2672,
+      "longitude": -97.7431,
+      "display_name": "Austin, Texas, United States"
+    },
+    "dallas|tx|united states": {
+      "city": "Dallas",
+      "state": "TX",
+      "country": "United States",
+      "latitude": 32.7767,
+      "longitude": -96.797,
+      "display_name": "Dallas, Texas, United States"
+    },
+    "houston|tx|united states": {
+      "city": "Houston",
+      "state": "TX",
+      "country": "United States",
+      "latitude": 29.7604,
+      "longitude": -95.3698,
+      "display_name": "Houston, Texas, United States"
+    },
+    "jersey city|nj|united states": {
+      "city": "Jersey City",
+      "state": "NJ",
+      "country": "United States",
+      "latitude": 40.7282,
+      "longitude": -74.0776,
+      "display_name": "Jersey City, New Jersey, United States"
+    },
+    "newark|nj|united states": {
+      "city": "Newark",
+      "state": "NJ",
+      "country": "United States",
+      "latitude": 40.7357,
+      "longitude": -74.1724,
+      "display_name": "Newark, New Jersey, United States"
+    },
+    "princeton|nj|united states": {
+      "city": "Princeton",
+      "state": "NJ",
+      "country": "United States",
+      "latitude": 40.3573,
+      "longitude": -74.6672,
+      "display_name": "Princeton, New Jersey, United States"
+    }
+  }
+}

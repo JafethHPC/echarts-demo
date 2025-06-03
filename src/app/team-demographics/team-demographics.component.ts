@@ -4,8 +4,6 @@ import { EChartsOption } from 'echarts';
 import worldGeoJson from '../../assets/worldEN.json';
 import { TeamDemographicsService } from './team-demographics.service';
 import { TeamMember } from './models/location.model';
-import { forkJoin } from 'rxjs';
-import { LocationCacheService } from './services/location-cache.service';
 
 /**
  * Interface representing a team member with their details
@@ -52,7 +50,7 @@ export class TeamDemographicsComponent implements OnInit {
   private COUNTRY_ZOOM = 2.5;
   private STATE_ZOOM = 4.0;
   private CITY_ZOOM = 5.0;
-  private currentZoom = 1.8; // Default starting zoom
+  private currentZoom = 2; // Updated to match new default zoom
 
   // Grouped data for different zoom levels
   private countryNodes: any[] = [];
@@ -130,10 +128,7 @@ export class TeamDemographicsComponent implements OnInit {
     ).length;
   }
 
-  constructor(
-    private teamDemographicsService: TeamDemographicsService,
-    private locationCacheService: LocationCacheService
-  ) {}
+  constructor(private teamDemographicsService: TeamDemographicsService) {}
 
   ngOnInit(): void {
     this.isLoadingData = true;
@@ -141,12 +136,12 @@ export class TeamDemographicsComponent implements OnInit {
     try {
       // Get locations and team members with coordinates
       this.teamDemographicsService.getTeamMembersWithCoordinates().subscribe(
-        (members) => {
+        (members: Array<TeamMember & { coordinates?: [number, number] }>) => {
           this.teammates = members;
           this.initializeMap();
           this.isLoadingData = false;
         },
-        (error) => {
+        (error: any) => {
           console.error('Error loading team members:', error);
           this.setErrorState();
           this.isLoadingData = false;
@@ -239,7 +234,7 @@ export class TeamDemographicsComponent implements OnInit {
         disabled: true,
       },
       center: [0, 20], // Centers the map slightly north of the equator
-      zoom: 1.8,
+      zoom: 2, // Increased from 1.8 to 2.5 for more zoomed in view
       boundingCoords: [
         [-180, 90], // Top-left coordinate
         [180, -90], // Bottom-right coordinate
@@ -899,42 +894,5 @@ export class TeamDemographicsComponent implements OnInit {
   public getSortIndicator(column: keyof TeamMember): string {
     if (this.sortColumn !== column) return '↕';
     return this.sortDirection === 'asc' ? '↑' : '↓';
-  }
-
-  /**
-   * Example method demonstrating how to create a team member with the new structure
-   * and fetch its locationId
-   */
-  public createTeamMemberExample(): void {
-    // Create a new team member as specified in the requirements
-    const newTeamMember: TeamMember = {
-      name: 'Jane Doe',
-      role: 'Backend Engineer',
-      profilePic:
-        'https://ui-avatars.com/api/?name=Jane+Doe&background=random&size=128',
-      city: 'Paris',
-      state: '',
-      country: 'France',
-      locationId: null,
-      // Coordinates [longitude, latitude] for Paris
-      coordinates: [2.3522, 48.8566],
-      // Optional fields
-      timeZone: 'CET',
-    };
-
-    // Update the team member with location information
-    this.teamDemographicsService
-      .updateTeamMemberWithLocation(newTeamMember)
-      .subscribe({
-        next: (updatedMember) => {
-          console.log('Team member with location ID:', updatedMember);
-          // You could add this member to the teammates array
-          // this.teammates.push(updatedMember);
-          // this.initializeMap(); // Refresh the map to show the new team member
-        },
-        error: (err) => {
-          console.error('Error fetching location data:', err);
-        },
-      });
   }
 }

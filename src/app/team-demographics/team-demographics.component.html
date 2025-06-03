@@ -1,22 +1,28 @@
 <!-- Stats Row -->
 <div class="stats-row">
   <div class="stat-box">
-    Team Size<br /><b>{{ teamSize }}</b>
+    <div class="stat-number">{{ teamSize }}</div>
+    <div class="stat-label">Team Size</div>
   </div>
   <div class="stat-box">
-    Locations<br /><b>{{ uniqueLocations }}</b>
+    <div class="stat-number">{{ uniqueLocations }}</div>
+    <div class="stat-label">Team Locations</div>
   </div>
   <div class="stat-box">
-    Software/Data Engineers<br /><b>{{ numSoftwareEngineers }}</b>
+    <div class="stat-number">{{ numSoftwareEngineers }}</div>
+    <div class="stat-label">Software Engineer<br />/Data Engineer</div>
   </div>
   <div class="stat-box">
-    Quality Specialists<br /><b>{{ numQualitySpecialists }}</b>
+    <div class="stat-number">{{ numQualitySpecialists }}</div>
+    <div class="stat-label">Quality Specialist<br />/Analyst</div>
   </div>
   <div class="stat-box">
-    Scrum Masters<br /><b>{{ numScrumMasters }}</b>
+    <div class="stat-number">{{ numScrumMasters }}</div>
+    <div class="stat-label">Scrum Master</div>
   </div>
   <div class="stat-box">
-    Product Owners<br /><b>{{ numProductOwners }}</b>
+    <div class="stat-number">{{ numProductOwners }}</div>
+    <div class="stat-label">Product Owner</div>
   </div>
   <div class="stat-box" *ngIf="numAppControlSpecialists > 0">
     App Control Specialists<br /><b>{{ numAppControlSpecialists }}</b>

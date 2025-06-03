@@ -1,0 +1,16 @@
+{
+  "name": "xlsx-geocoder",
+  "version": "1.0.0",
+  "description": "Script to geocode locations from XLSX files",
+  "main": "geocoding-script.js",
+  "scripts": {
+    "start": "node geocoding-script.js",
+    "test": "node test-geocoder.js"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  },
+  "keywords": ["geocoding", "xlsx", "coordinates", "latitude", "longitude"],
+  "author": "Your Name",
+  "license": "MIT"
+}

@@ -5,7 +5,8 @@
       "role": "Senior Developer",
       "hrManager": "Sarah Wilson",
       "city": "Charlotte",
-      "country": "United States - NC",
+      "state": "NC",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -13,7 +14,8 @@
       "role": "UX Designer",
       "hrManager": "Sarah Wilson",
       "city": "Charlotte",
-      "country": "United States - NC",
+      "state": "NC",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -21,7 +23,8 @@
       "role": "DevOps Engineer",
       "hrManager": "Sarah Wilson",
       "city": "Charlotte",
-      "country": "United States - NC",
+      "state": "NC",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -29,7 +32,8 @@
       "role": "Product Manager",
       "hrManager": "Sarah Wilson",
       "city": "Charlotte",
-      "country": "United States - NC",
+      "state": "NC",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -37,7 +41,8 @@
       "role": "Backend Developer",
       "hrManager": "Sarah Wilson",
       "city": "Charlotte",
-      "country": "United States - NC",
+      "state": "NC",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -45,7 +50,8 @@
       "role": "UI/UX Designer",
       "hrManager": "Sarah Wilson",
       "city": "Durham",
-      "country": "United States - NC",
+      "state": "NC",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -53,7 +59,8 @@
       "role": "Backend Developer",
       "hrManager": "Sarah Wilson",
       "city": "Raleigh",
-      "country": "United States - NC",
+      "state": "NC",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -61,7 +68,8 @@
       "role": "Full Stack Developer",
       "hrManager": "Sarah Wilson",
       "city": "Charlotte",
-      "country": "United States - NC",
+      "state": "NC",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -69,7 +77,8 @@
       "role": "System Architect",
       "hrManager": "Sarah Wilson",
       "city": "Raleigh",
-      "country": "United States - NC",
+      "state": "NC",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -77,7 +86,8 @@
       "role": "Cloud Engineer",
       "hrManager": "Sarah Wilson",
       "city": "Durham",
-      "country": "United States - NC",
+      "state": "NC",
+      "country": "United States",
       "timeZone": "EST"
     },
 
@@ -86,7 +96,8 @@
       "role": "Frontend Developer",
       "hrManager": "Jennifer Adams",
       "city": "New York",
-      "country": "United States - NY",
+      "state": "NY",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -94,7 +105,8 @@
       "role": "Data Scientist",
       "hrManager": "Jennifer Adams",
       "city": "New York",
-      "country": "United States - NY",
+      "state": "NY",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -102,7 +114,8 @@
       "role": "QA Engineer",
       "hrManager": "Jennifer Adams",
       "city": "New York",
-      "country": "United States - NY",
+      "state": "NY",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -110,7 +123,8 @@
       "role": "Systems Architect",
       "hrManager": "Jennifer Adams",
       "city": "New York",
-      "country": "United States - NY",
+      "state": "NY",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -118,7 +132,8 @@
       "role": "Mobile Developer",
       "hrManager": "Jennifer Adams",
       "city": "New York",
-      "country": "United States - NY",
+      "state": "NY",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -126,7 +141,8 @@
       "role": "Project Manager",
       "hrManager": "Jennifer Adams",
       "city": "Buffalo",
-      "country": "United States - NY",
+      "state": "NY",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -134,7 +150,8 @@
       "role": "Product Manager",
       "hrManager": "Jennifer Adams",
       "city": "New York",
-      "country": "United States - NY",
+      "state": "NY",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -142,7 +159,8 @@
       "role": "Data Engineer",
       "hrManager": "Jennifer Adams",
       "city": "Buffalo",
-      "country": "United States - NY",
+      "state": "NY",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -150,7 +168,8 @@
       "role": "AI Engineer",
       "hrManager": "Jennifer Adams",
       "city": "New York",
-      "country": "United States - NY",
+      "state": "NY",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -158,7 +177,8 @@
       "role": "Security Engineer",
       "hrManager": "Jennifer Adams",
       "city": "New York",
-      "country": "United States - NY",
+      "state": "NY",
+      "country": "United States",
       "timeZone": "EST"
     },
 
@@ -167,6 +187,7 @@
       "role": "Software Engineer",
       "hrManager": "Mark Thompson",
       "city": "London",
+      "state": "",
       "country": "United Kingdom",
       "timeZone": "GMT"
     },
@@ -175,6 +196,7 @@
       "role": "Frontend Developer",
       "hrManager": "Mark Thompson",
       "city": "London",
+      "state": "",
       "country": "United Kingdom",
       "timeZone": "GMT"
     },
@@ -183,6 +205,7 @@
       "role": "DevOps Engineer",
       "hrManager": "Mark Thompson",
       "city": "London",
+      "state": "",
       "country": "United Kingdom",
       "timeZone": "GMT"
     },
@@ -191,6 +214,7 @@
       "role": "UX Designer",
       "hrManager": "Mark Thompson",
       "city": "Manchester",
+      "state": "",
       "country": "United Kingdom",
       "timeZone": "GMT"
     },
@@ -199,6 +223,7 @@
       "role": "Backend Developer",
       "hrManager": "Mark Thompson",
       "city": "London",
+      "state": "",
       "country": "United Kingdom",
       "timeZone": "GMT"
     },
@@ -207,6 +232,7 @@
       "role": "Full Stack Developer",
       "hrManager": "Mark Thompson",
       "city": "Birmingham",
+      "state": "",
       "country": "United Kingdom",
       "timeZone": "GMT"
     },
@@ -215,6 +241,7 @@
       "role": "UX Designer",
       "hrManager": "Mark Thompson",
       "city": "London",
+      "state": "",
       "country": "United Kingdom",
       "timeZone": "GMT"
     },
@@ -223,6 +250,7 @@
       "role": "DevOps Engineer",
       "hrManager": "Mark Thompson",
       "city": "Manchester",
+      "state": "",
       "country": "United Kingdom",
       "timeZone": "GMT"
     },
@@ -231,6 +259,7 @@
       "role": "Product Owner",
       "hrManager": "Mark Thompson",
       "city": "Edinburgh",
+      "state": "",
       "country": "United Kingdom",
       "timeZone": "GMT"
     },
@@ -239,6 +268,7 @@
       "role": "Technical Lead",
       "hrManager": "Mark Thompson",
       "city": "Bristol",
+      "state": "",
       "country": "United Kingdom",
       "timeZone": "GMT"
     },
@@ -248,6 +278,7 @@
       "role": "Senior Developer",
       "hrManager": "Ana Garcia",
       "city": "Madrid",
+      "state": "",
       "country": "Spain",
       "timeZone": "CET"
     },
@@ -256,6 +287,7 @@
       "role": "Product Manager",
       "hrManager": "Ana Garcia",
       "city": "Barcelona",
+      "state": "",
       "country": "Spain",
       "timeZone": "CET"
     },
@@ -264,6 +296,7 @@
       "role": "Frontend Developer",
       "hrManager": "Ana Garcia",
       "city": "Madrid",
+      "state": "",
       "country": "Spain",
       "timeZone": "CET"
     },
@@ -272,6 +305,7 @@
       "role": "UX Designer",
       "hrManager": "Ana Garcia",
       "city": "Barcelona",
+      "state": "",
       "country": "Spain",
       "timeZone": "CET"
     },
@@ -280,6 +314,7 @@
       "role": "Backend Developer",
       "hrManager": "Ana Garcia",
       "city": "Madrid",
+      "state": "",
       "country": "Spain",
       "timeZone": "CET"
     },
@@ -288,6 +323,7 @@
       "role": "QA Lead",
       "hrManager": "Ana Garcia",
       "city": "Seville",
+      "state": "",
       "country": "Spain",
       "timeZone": "CET"
     },
@@ -296,6 +332,7 @@
       "role": "Solutions Architect",
       "hrManager": "Ana Garcia",
       "city": "Valencia",
+      "state": "",
       "country": "Spain",
       "timeZone": "CET"
     },
@@ -304,6 +341,7 @@
       "role": "Frontend Developer",
       "hrManager": "Ana Garcia",
       "city": "Barcelona",
+      "state": "",
       "country": "Spain",
       "timeZone": "CET"
     },
@@ -312,6 +350,7 @@
       "role": "Backend Developer",
       "hrManager": "Ana Garcia",
       "city": "Madrid",
+      "state": "",
       "country": "Spain",
       "timeZone": "CET"
     },
@@ -320,6 +359,7 @@
       "role": "Data Scientist",
       "hrManager": "Ana Garcia",
       "city": "Barcelona",
+      "state": "",
       "country": "Spain",
       "timeZone": "CET"
     },
@@ -329,6 +369,7 @@
       "role": "Software Engineer",
       "hrManager": "Marie Laurent",
       "city": "Paris",
+      "state": "",
       "country": "France",
       "timeZone": "CET"
     },
@@ -337,6 +378,7 @@
       "role": "Data Scientist",
       "hrManager": "Marie Laurent",
       "city": "Lyon",
+      "state": "",
       "country": "France",
       "timeZone": "CET"
     },
@@ -345,6 +387,7 @@
       "role": "Frontend Developer",
       "hrManager": "Marie Laurent",
       "city": "Paris",
+      "state": "",
       "country": "France",
       "timeZone": "CET"
     },
@@ -353,6 +396,7 @@
       "role": "DevOps Engineer",
       "hrManager": "Marie Laurent",
       "city": "Paris",
+      "state": "",
       "country": "France",
       "timeZone": "CET"
     },
@@ -361,6 +405,7 @@
       "role": "UX Designer",
       "hrManager": "Marie Laurent",
       "city": "Lyon",
+      "state": "",
       "country": "France",
       "timeZone": "CET"
     },
@@ -369,6 +414,7 @@
       "role": "Product Manager",
       "hrManager": "Marie Laurent",
       "city": "Paris",
+      "state": "",
       "country": "France",
       "timeZone": "CET"
     },
@@ -377,6 +423,7 @@
       "role": "Data Scientist",
       "hrManager": "Marie Laurent",
       "city": "Lyon",
+      "state": "",
       "country": "France",
       "timeZone": "CET"
     },
@@ -385,6 +432,7 @@
       "role": "QA Engineer",
       "hrManager": "Marie Laurent",
       "city": "Marseille",
+      "state": "",
       "country": "France",
       "timeZone": "CET"
     },
@@ -393,6 +441,7 @@
       "role": "Mobile Developer",
       "hrManager": "Marie Laurent",
       "city": "Bordeaux",
+      "state": "",
       "country": "France",
       "timeZone": "CET"
     },
@@ -401,6 +450,7 @@
       "role": "System Architect",
       "hrManager": "Marie Laurent",
       "city": "Paris",
+      "state": "",
       "country": "France",
       "timeZone": "CET"
     },
@@ -410,6 +460,7 @@
       "role": "Senior Developer",
       "hrManager": "Klaus Weber",
       "city": "Berlin",
+      "state": "",
       "country": "Germany",
       "timeZone": "CET"
     },
@@ -418,6 +469,7 @@
       "role": "Product Manager",
       "hrManager": "Klaus Weber",
       "city": "Munich",
+      "state": "",
       "country": "Germany",
       "timeZone": "CET"
     },
@@ -426,6 +478,7 @@
       "role": "Backend Developer",
       "hrManager": "Klaus Weber",
       "city": "Berlin",
+      "state": "",
       "country": "Germany",
       "timeZone": "CET"
     },
@@ -434,6 +487,7 @@
       "role": "Frontend Developer",
       "hrManager": "Klaus Weber",
       "city": "Hamburg",
+      "state": "",
       "country": "Germany",
       "timeZone": "CET"
     },
@@ -442,6 +496,7 @@
       "role": "DevOps Engineer",
       "hrManager": "Klaus Weber",
       "city": "Munich",
+      "state": "",
       "country": "Germany",
       "timeZone": "CET"
     },
@@ -450,6 +505,7 @@
       "role": "DevOps Engineer",
       "hrManager": "Klaus Weber",
       "city": "Berlin",
+      "state": "",
       "country": "Germany",
       "timeZone": "CET"
     },
@@ -458,6 +514,7 @@
       "role": "Backend Developer",
       "hrManager": "Klaus Weber",
       "city": "Munich",
+      "state": "",
       "country": "Germany",
       "timeZone": "CET"
     },
@@ -466,6 +523,7 @@
       "role": "System Architect",
       "hrManager": "Klaus Weber",
       "city": "Hamburg",
+      "state": "",
       "country": "Germany",
       "timeZone": "CET"
     },
@@ -474,6 +532,7 @@
       "role": "Cloud Architect",
       "hrManager": "Klaus Weber",
       "city": "Cologne",
+      "state": "",
       "country": "Germany",
       "timeZone": "CET"
     },
@@ -482,6 +541,7 @@
       "role": "Data Engineer",
       "hrManager": "Klaus Weber",
       "city": "Berlin",
+      "state": "",
       "country": "Germany",
       "timeZone": "CET"
     },
@@ -491,6 +551,7 @@
       "role": "Software Engineer",
       "hrManager": "Hiroshi Sato",
       "city": "Tokyo",
+      "state": "",
       "country": "Japan",
       "timeZone": "JST"
     },
@@ -499,6 +560,7 @@
       "role": "UX Designer",
       "hrManager": "Hiroshi Sato",
       "city": "Osaka",
+      "state": "",
       "country": "Japan",
       "timeZone": "JST"
     },
@@ -507,6 +569,7 @@
       "role": "Backend Developer",
       "hrManager": "Hiroshi Sato",
       "city": "Tokyo",
+      "state": "",
       "country": "Japan",
       "timeZone": "JST"
     },
@@ -515,6 +578,7 @@
       "role": "Frontend Developer",
       "hrManager": "Hiroshi Sato",
       "city": "Tokyo",
+      "state": "",
       "country": "Japan",
       "timeZone": "JST"
     },
@@ -523,6 +587,7 @@
       "role": "Mobile Developer",
       "hrManager": "Hiroshi Sato",
       "city": "Osaka",
+      "state": "",
       "country": "Japan",
       "timeZone": "JST"
     },
@@ -531,6 +596,7 @@
       "role": "Frontend Developer",
       "hrManager": "Hiroshi Sato",
       "city": "Osaka",
+      "state": "",
       "country": "Japan",
       "timeZone": "JST"
     },
@@ -539,6 +605,7 @@
       "role": "Technical Director",
       "hrManager": "Hiroshi Sato",
       "city": "Fukuoka",
+      "state": "",
       "country": "Japan",
       "timeZone": "JST"
     },
@@ -547,6 +614,7 @@
       "role": "UX Researcher",
       "hrManager": "Hiroshi Sato",
       "city": "Kyoto",
+      "state": "",
       "country": "Japan",
       "timeZone": "JST"
     },
@@ -555,6 +623,7 @@
       "role": "AI Engineer",
       "hrManager": "Hiroshi Sato",
       "city": "Tokyo",
+      "state": "",
       "country": "Japan",
       "timeZone": "JST"
     },
@@ -563,6 +632,7 @@
       "role": "Data Scientist",
       "hrManager": "Hiroshi Sato",
       "city": "Osaka",
+      "state": "",
       "country": "Japan",
       "timeZone": "JST"
     },
@@ -572,6 +642,7 @@
       "role": "Senior Developer",
       "hrManager": "Priya Sharma",
       "city": "Bangalore",
+      "state": "",
       "country": "India",
       "timeZone": "IST"
     },
@@ -580,6 +651,7 @@
       "role": "Product Manager",
       "hrManager": "Priya Sharma",
       "city": "Mumbai",
+      "state": "",
       "country": "India",
       "timeZone": "IST"
     },
@@ -588,6 +660,7 @@
       "role": "Frontend Developer",
       "hrManager": "Priya Sharma",
       "city": "Bangalore",
+      "state": "",
       "country": "India",
       "timeZone": "IST"
     },
@@ -596,6 +669,7 @@
       "role": "UX Designer",
       "hrManager": "Priya Sharma",
       "city": "Delhi",
+      "state": "",
       "country": "India",
       "timeZone": "IST"
     },
@@ -604,6 +678,7 @@
       "role": "Backend Developer",
       "hrManager": "Priya Sharma",
       "city": "Mumbai",
+      "state": "",
       "country": "India",
       "timeZone": "IST"
     },
@@ -612,6 +687,7 @@
       "role": "Data Scientist",
       "hrManager": "Priya Sharma",
       "city": "Mumbai",
+      "state": "",
       "country": "India",
       "timeZone": "IST"
     },
@@ -620,6 +696,7 @@
       "role": "Backend Developer",
       "hrManager": "Priya Sharma",
       "city": "Delhi",
+      "state": "",
       "country": "India",
       "timeZone": "IST"
     },
@@ -628,6 +705,7 @@
       "role": "Product Owner",
       "hrManager": "Priya Sharma",
       "city": "Hyderabad",
+      "state": "",
       "country": "India",
       "timeZone": "IST"
     },
@@ -636,6 +714,7 @@
       "role": "Security Engineer",
       "hrManager": "Priya Sharma",
       "city": "Chennai",
+      "state": "",
       "country": "India",
       "timeZone": "IST"
     },
@@ -644,6 +723,7 @@
       "role": "ML Engineer",
       "hrManager": "Priya Sharma",
       "city": "Pune",
+      "state": "",
       "country": "India",
       "timeZone": "IST"
     },
@@ -653,6 +733,7 @@
       "role": "Software Engineer",
       "hrManager": "Zhang Wei",
       "city": "Shanghai",
+      "state": "",
       "country": "China",
       "timeZone": "CST"
     },
@@ -661,6 +742,7 @@
       "role": "Data Scientist",
       "hrManager": "Zhang Wei",
       "city": "Beijing",
+      "state": "",
       "country": "China",
       "timeZone": "CST"
     },
@@ -669,6 +751,7 @@
       "role": "Frontend Developer",
       "hrManager": "Zhang Wei",
       "city": "Shenzhen",
+      "state": "",
       "country": "China",
       "timeZone": "CST"
     },
@@ -677,6 +760,7 @@
       "role": "UX Designer",
       "hrManager": "Zhang Wei",
       "city": "Shanghai",
+      "state": "",
       "country": "China",
       "timeZone": "CST"
     },
@@ -685,6 +769,7 @@
       "role": "Backend Developer",
       "hrManager": "Zhang Wei",
       "city": "Beijing",
+      "state": "",
       "country": "China",
       "timeZone": "CST"
     },
@@ -693,6 +778,7 @@
       "role": "Frontend Developer",
       "hrManager": "Zhang Wei",
       "city": "Shanghai",
+      "state": "",
       "country": "China",
       "timeZone": "CST"
     },
@@ -701,6 +787,7 @@
       "role": "Mobile Developer",
       "hrManager": "Zhang Wei",
       "city": "Shenzhen",
+      "state": "",
       "country": "China",
       "timeZone": "CST"
     },
@@ -709,6 +796,7 @@
       "role": "Data Engineer",
       "hrManager": "Zhang Wei",
       "city": "Guangzhou",
+      "state": "",
       "country": "China",
       "timeZone": "CST"
     },
@@ -717,6 +805,7 @@
       "role": "DevOps Lead",
       "hrManager": "Zhang Wei",
       "city": "Chengdu",
+      "state": "",
       "country": "China",
       "timeZone": "CST"
     },
@@ -725,6 +814,7 @@
       "role": "AI Researcher",
       "hrManager": "Zhang Wei",
       "city": "Beijing",
+      "state": "",
       "country": "China",
       "timeZone": "CST"
     },
@@ -733,7 +823,8 @@
       "role": "Full Stack Developer",
       "hrManager": "Jennifer Adams",
       "city": "Austin",
-      "country": "United States - TX",
+      "state": "TX",
+      "country": "United States",
       "timeZone": "CST"
     },
     {
@@ -741,7 +832,8 @@
       "role": "System Architect",
       "hrManager": "Jennifer Adams",
       "city": "Dallas",
-      "country": "United States - TX",
+      "state": "TX",
+      "country": "United States",
       "timeZone": "CST"
     },
     {
@@ -749,7 +841,8 @@
       "role": "Cloud Engineer",
       "hrManager": "Jennifer Adams",
       "city": "Houston",
-      "country": "United States - TX",
+      "state": "TX",
+      "country": "United States",
       "timeZone": "CST"
     },
     {
@@ -757,7 +850,8 @@
       "role": "DevOps Engineer",
       "hrManager": "Jennifer Adams",
       "city": "Austin",
-      "country": "United States - TX",
+      "state": "TX",
+      "country": "United States",
       "timeZone": "CST"
     },
     {
@@ -765,7 +859,8 @@
       "role": "Security Specialist",
       "hrManager": "Jennifer Adams",
       "city": "Dallas",
-      "country": "United States - TX",
+      "state": "TX",
+      "country": "United States",
       "timeZone": "CST"
     },
     {
@@ -773,7 +868,8 @@
       "role": "UI/UX Designer",
       "hrManager": "Jennifer Adams",
       "city": "Houston",
-      "country": "United States - TX",
+      "state": "TX",
+      "country": "United States",
       "timeZone": "CST"
     },
     {
@@ -781,7 +877,8 @@
       "role": "Backend Developer",
       "hrManager": "Jennifer Adams",
       "city": "Austin",
-      "country": "United States - TX",
+      "state": "TX",
+      "country": "United States",
       "timeZone": "CST"
     },
     {
@@ -789,7 +886,8 @@
       "role": "Product Manager",
       "hrManager": "Jennifer Adams",
       "city": "Dallas",
-      "country": "United States - TX",
+      "state": "TX",
+      "country": "United States",
       "timeZone": "CST"
     },
     {
@@ -797,7 +895,8 @@
       "role": "Data Engineer",
       "hrManager": "Jennifer Adams",
       "city": "Houston",
-      "country": "United States - TX",
+      "state": "TX",
+      "country": "United States",
       "timeZone": "CST"
     },
     {
@@ -805,7 +904,8 @@
       "role": "QA Lead",
       "hrManager": "Jennifer Adams",
       "city": "Austin",
-      "country": "United States - TX",
+      "state": "TX",
+      "country": "United States",
       "timeZone": "CST"
     },
     {
@@ -813,7 +913,8 @@
       "role": "DevOps Engineer",
       "hrManager": "Jennifer Adams",
       "city": "Jersey City",
-      "country": "United States - NJ",
+      "state": "NJ",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -821,7 +922,8 @@
       "role": "UX Designer",
       "hrManager": "Jennifer Adams",
       "city": "Newark",
-      "country": "United States - NJ",
+      "state": "NJ",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -829,7 +931,8 @@
       "role": "Software Architect",
       "hrManager": "Jennifer Adams",
       "city": "Princeton",
-      "country": "United States - NJ",
+      "state": "NJ",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -837,7 +940,8 @@
       "role": "Frontend Developer",
       "hrManager": "Jennifer Adams",
       "city": "Jersey City",
-      "country": "United States - NJ",
+      "state": "NJ",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -845,7 +949,8 @@
       "role": "Data Scientist",
       "hrManager": "Jennifer Adams",
       "city": "Newark",
-      "country": "United States - NJ",
+      "state": "NJ",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -853,7 +958,8 @@
       "role": "Product Owner",
       "hrManager": "Jennifer Adams",
       "city": "Princeton",
-      "country": "United States - NJ",
+      "state": "NJ",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -861,7 +967,8 @@
       "role": "Mobile Developer",
       "hrManager": "Jennifer Adams",
       "city": "Jersey City",
-      "country": "United States - NJ",
+      "state": "NJ",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -869,7 +976,8 @@
       "role": "QA Engineer",
       "hrManager": "Jennifer Adams",
       "city": "Newark",
-      "country": "United States - NJ",
+      "state": "NJ",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -877,7 +985,8 @@
       "role": "Systems Engineer",
       "hrManager": "Jennifer Adams",
       "city": "Princeton",
-      "country": "United States - NJ",
+      "state": "NJ",
+      "country": "United States",
       "timeZone": "EST"
     },
     {
@@ -885,7 +994,8 @@
       "role": "Technical Lead",
       "hrManager": "Jennifer Adams",
       "city": "Jersey City",
-      "country": "United States - NJ",
+      "state": "NJ",
+      "country": "United States",
       "timeZone": "EST"
     }
   ]
